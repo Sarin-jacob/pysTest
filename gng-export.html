@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Go/No-Go Test</title>
+ <style>
+    /* Import a modern font for a cleaner look */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
+
+    /* --- Modern Color Palette & Root Variables --- */
+    :root {
+      --font-family: 'Inter', sans-serif;
+      --border-radius: 8px;
+      --transition-speed: 0.3s;
+      
+      /* Dark Theme */
+      --bg-color: #121212;
+      --text-color: #E0E0E0;
+      --sidebar-bg: #1E1E1E;
+      --sidebar-border: #333;
+      --input-bg: #2C2C2C;
+      --input-border: #444;
+      --input-text: #E0E0E0;
+      --button-bg: #333;
+      --button-text: #E0E0E0;
+      --accent-color: #3B82F6; /* A nice blue for focus/highlights */
+      --shadow-color: rgba(0, 0, 0, 0.2);
+    }
+
+    body.light {
+      /* Light Theme */
+      --bg-color: #F4F4F5;
+      --text-color: #18181B;
+      --sidebar-bg: #FFFFFF;
+      --sidebar-border: #E4E4E7;
+      --input-bg: #FFFFFF;
+      --input-border: #D4D4D8;
+      --input-text: #18181B;
+      --button-bg: #E4E4E7;
+      --button-text: #18181B;
+      --accent-color: #2563EB;
+      --shadow-color: rgba(0, 0, 0, 0.1);
+    }
+    
+    /* --- General Body & Layout --- */
+    body {
+      display: flex;
+      margin: 0;
+      font-family: var(--font-family);
+      background: var(--bg-color);
+      color: var(--text-color);
+      transition: background var(--transition-speed) ease, color var(--transition-speed) ease;
+    }
+
+    /* --- Sidebar Styling --- */
+    #sidebar {
+      width: 280px; /* Slightly wider for better spacing */
+      background: var(--sidebar-bg);
+      padding: 24px;
+      height: 100vh;
+      overflow-y: auto;
+      border-right: 1px solid var(--sidebar-border);
+      box-sizing: border-box;
+      transition: background var(--transition-speed) ease;
+      box-shadow: 2px 0 15px var(--shadow-color);
+    }
+
+    #sidebar h2 {
+      font-size: 24px;
+      margin-top: 0;
+      margin-bottom: 20px;
+      font-weight: 700;
+    }
+
+    #sidebar label {
+      display: block;
+      margin: 15px 0 6px;
+      font-weight: 500;
+      font-size: 14px;
+    }
+    
+    /* --- Modern Input Fields --- */
+    #sidebar input, #sidebar select {
+      width: 100%;
+      padding: 10px;
+      background: var(--input-bg);
+      border: 1px solid var(--input-border);
+      color: var(--input-text);
+      border-radius: var(--border-radius);
+      box-sizing: border-box; /* Ensures padding doesn't affect width */
+      transition: border-color var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
+    }
+
+    #sidebar input:focus, #sidebar select:focus {
+      outline: none;
+      border-color: var(--accent-color);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-color) 25%, transparent);
+    }
+    
+    /* --- Main Content Area --- */
+    #main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 40px;
+      position: relative;
+    }
+    
+    #main h1 {
+        position: absolute;
+        top: 20px;
+        font-size: 28px;
+        font-weight: 700;
+    }
+
+    #stimulus {
+      height: 200px;
+      font-size: 250px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.2s ease;
+    }
+    
+    #stimulus.big {
+        font-size: 400px; /* Even bigger circle */
+    }
+
+    /* --- Modern Buttons --- */
+    button {
+      padding: 12px 24px;
+      margin: 10px;
+      cursor: pointer;
+      background: var(--button-bg);
+      color: var(--button-text);
+      border: 1px solid var(--input-border);
+      border-radius: var(--border-radius);
+      font-family: var(--font-family);
+      font-size: 16px;
+      font-weight: 500;
+      transition: all var(--transition-speed) ease;
+    }
+    
+    button:hover {
+      border-color: var(--accent-color);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 10px var(--shadow-color);
+    }
+    
+    button:active {
+        transform: translateY(0);
+        box-shadow: none;
+    }
+
+    /* Primary action button styling */
+    #startBtn, #instructions button {
+        background-color: var(--accent-color);
+        color: white;
+        border-color: transparent;
+    }
+    
+    #results {
+      margin-top: 30px;
+      font-size: 16px;
+      white-space: pre-wrap;
+      text-align: left;
+      line-height: 1.6;
+      background: var(--sidebar-bg);
+      padding: 20px;
+      border-radius: var(--border-radius);
+      box-shadow: 0 2px 10px var(--shadow-color);
+    }
+    
+    /* --- Modern Toggle Switch --- */
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 50px;
+      height: 28px;
+    }
+    .switch input { display:none; }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: #555;
+      transition: var(--transition-speed) ease;
+      border-radius: 28px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 20px;
+      width: 20px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      transition: var(--transition-speed) ease;
+      border-radius: 50%;
+    }
+
+    input:checked + .slider {
+      background-color: var(--accent-color);
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(22px);
+    }
+
+    /* --- Modernized Popup / Modal --- */
+    #popup, #instructions {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5);
+      backdrop-filter: blur(5px); /* Glassmorphism effect */
+      display: none;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      z-index: 1000;
+      opacity: 0;
+      animation: fadeIn 0.3s forwards;
+    }
+
+    @keyframes fadeIn {
+        to { opacity: 1; }
+    }
+
+    #instructions {
+        display: flex; /* Override none to show initially */
+        padding: 40px;
+        box-sizing: border-box;
+    }
+
+    #popupContent, #instructions div {
+      background: var(--sidebar-bg);
+      padding: 30px;
+      border-radius: 16px;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      max-width: 650px;
+      width: 90%;
+    }
+    
+    #instructions div {
+        text-align: left;
+        line-height: 1.7;
+    }
+
+    #popup canvas {
+      background: #fff;
+      margin: 10px auto 20px;
+      border-radius: var(--border-radius);
+      display: block;
+    }
+    
+    /* --- Countdown Styling --- */
+    #countdown {
+      font-size: 200px;
+      font-weight: 700;
+      color: var(--accent-color);
+    }
+    
+    /* --- Misc & Utility --- */
+    #modeToggle {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      cursor: pointer;
+      background: var(--button-bg);
+      color: var(--button-text);
+      padding: 8px 12px;
+      border-radius: var(--border-radius);
+      font-size: 20px;
+    }
+
+    .colour-div {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      width: 100%;
+      padding-top: 10px;
+      white-space: nowrap;
+    }
+
+    /* Nicer color swatch for color inputs */
+    input[type="color"] {
+        -webkit-appearance: none;
+        border: none;
+        width: 40px;
+        height: 40px;
+        padding: 0;
+        border-radius: 50%;
+        cursor: pointer;
+    }
+    input[type="color"]::-webkit-color-swatch-wrapper {
+        padding: 0;
+    }
+    input[type="color"]::-webkit-color-swatch {
+        border: 1px solid var(--input-border);
+        border-radius: 50%;
+    }
+
+    hr.rounded {
+      border: none;
+      border-top: 1px solid var(--sidebar-border);
+      margin: 25px 0 15px;
+    }
+    /* --- Modern Alert Styling --- */
+#modernAlert {
+  position: fixed;
+  top: -100px; /* Start off-screen */
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #ff4757; /* A modern error color */
+  color: white;
+  padding: 16px 30px;
+  border-radius: 8px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  z-index: 9999;
+  font-family: var(--font-family);
+  font-weight: 500;
+  transition: top 0.4s ease-in-out;
+}
+
+/* This class will be toggled by JavaScript to show the alert */
+#modernAlert.show {
+  top: 20px; /* Animate to this position */
+}
+
+#modernAlertMessage {
+  margin: 0;
+  font-size: 16px;
+}
+/* --- Styling for Collapsible Advanced Config --- */
+.advanced-config {
+  margin-top: 15px;
+  border: 1px solid var(--input-border);
+  border-radius: var(--border-radius);
+  overflow: hidden; /* Keeps the look clean */
+}
+
+.advanced-config summary {
+  cursor: pointer;
+  padding: 10px;
+  font-weight: 500;
+  background-color: var(--input-bg);
+  transition: background-color var(--transition-speed) ease;
+  user-select: none; /* Prevents text selection on click */
+}
+
+.advanced-config summary:hover {
+  background-color: var(--button-bg);
+}
+
+/* Style the dropdown arrow */
+.advanced-config summary::marker {
+  color: var(--text-color);
+}
+
+.advanced-options {
+  padding: 0 10px 10px 10px; /* Top, R/L, Bottom */
+  background-color: var(--sidebar-bg);
+}
+</style>
+</head>
+<body>
+  <div id="sidebar">
+    <h2>Config</h2>
+    <label>Subject ID (required)</label>
+    <input id="subjectId" type="text" required placeholder="Enter Subject ID">
+    <label>Age</label>
+    <input id="subjectAge" type="number" placeholder="Enter Age" required>
+    <label>Sex</label>
+    <select id="subjectSex">
+    <option value="">Select Sex</option>
+        <option value="Male">Male</option>
+        <option value="Female">Female</option>
+        <option value="Other">Other</option>
+    <!-- <option value="Prefer not to say">Prefer not to say</option> -->
+    </select>
+    <label>Num Trials</label>
+    <input id="numTrials" type="number" value="20">
+    <details class="advanced-config">
+    <summary>Advanced Config</summary>
+      <div class="advanced-options">
+        <label>Stimulus Time (ms)</label>
+        <input id="stimTime" type="number" value="1000">
+        <label>ISI (ms)</label>
+        <input id="isi" type="number" value="1000">
+        <label>Go Probability</label>
+        <input id="goProb" type="number" step="0.1" value="0.7">
+      </div>
+  </details>
+    <hr class="rounded">
+    <div id="textureDiv" style="display: inline-flex; gap: 30px;">
+    <label>Use Texture (✔ ✘)</label>
+    <label class="switch">
+      <input id="textureToggle" type="checkbox" checked>
+      <span class="slider"></span>
+    </label>
+    </div>
+    <div class="colour-div">
+    <label>Go Color</label>
+    <input id="goColor" class="color-input" type="color" value="#00ff00">
+    </div>
+    <div class="colour-div">
+    <label>No-Go Color</label>
+    <input id="nogoColor" class="color-input" type="color" value="#ff0000">
+    </div>
+  </div>
+
+  <div id="main">
+    <h1>Go/No-Go Test</h1>
+    <div id="countdown"></div>
+    <div id="stimulus"></div>
+    <button id="startBtn" style="display:none;">Start Test</button>
+    <div id="results" style="display:none;"></div>
+    <button id="showReportBtn" style="display:none;">Show Report</button>
+    <button id="modeToggle">🌙</button>
+  </div>
+
+  <!-- Instructions overlay -->
+  <div id="instructions">
+    <div>
+      <h2>Welcome to the Go/No-Go Test</h2>
+      <p>
+        In this test, you will see either a <b>Go</b> or <b>No-Go</b> stimulus.<br><br>
+        - If you see a <span style="color:lime;">Go</span> stimulus → press <b>any key</b> as quickly as possible.<br>
+        - If you see a <span style="color:red;">No-Go</span> stimulus → <b>do not press any key</b>.<br><br>
+        If "Use Texture" is <b>ON</b>:<br>
+        ✅ Go = Green Tick<br>
+        ❌ No-Go = Red Cross<br><br>
+        If "Use Texture" is <b>OFF</b>:<br>
+        🟢 Go = Green Circle<br>
+        🔴 No-Go = Red Circle<br><br>
+        Your performance will be scored based on:<br>
+        - Reaction times (Go trials)<br>
+        - Correct responses<br>
+        - Omissions (missed Go)<br>
+        - Correct inhibitions (No-Go, no press)<br>
+        - Commissions (pressed on No-Go)<br><br>
+      </p>
+      <button onclick="hideInstructions()" autofocus>Continue</button>
+    </div>
+  </div>
+
+  <!-- Popup overlay for report -->
+  <div id="popup">
+    <div id="popupContent">
+      <h2>Test Report</h2>
+      <canvas id="rtChart" width="400" height="200"></canvas>
+      <canvas id="perfChart" width="400" height="200"></canvas><br>
+      <button id="csvBtn">Download CSV</button>
+      <button id="pdfBtn">Download PDF</button>
+      <button onclick="closePopup()">Close</button>
+    </div>
+  </div>
+  <!-- Alert reimplementation -->
+  <div id="modernAlert">
+    <p id="modernAlertMessage"></p>
+  </div>
+  <!-- Chart.js + jsPDF -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://unpkg.com/jspdf@latest/dist/jspdf.umd.min.js"></script>
+
+  <script>
+
+  let alertTimeout; // To manage the hide timer
+  let trialActive = false;
+  const testName = "GoNoGo";
+  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+  function beep(freq=440, duration=150) {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.type = "sine";
+    osc.frequency.value = freq;
+    osc.start();
+    gain.gain.setValueAtTime(0.1, audioCtx.currentTime); // volume
+    osc.stop(audioCtx.currentTime + duration/1000);
+  }
+
+  // New function to show the modern alert
+    function showAlert(message) {
+      const alertBox = document.getElementById("modernAlert");
+      const alertMessage = document.getElementById("modernAlertMessage");
+
+      // Clear any existing timer to prevent premature hiding
+      clearTimeout(alertTimeout);
+
+      // Set the message and show the alert
+      alertMessage.textContent = message;
+      alertBox.classList.add("show");
+
+      // Set a timer to hide it after 3 seconds
+      alertTimeout = setTimeout(() => {
+        alertBox.classList.remove("show");
+      }, 3000);
+    }
+
+    document.getElementById('subjectId').value = '';
+    let trial, config, results, subjectId;
+    let currentStimulus = null;
+    let stimulusOnset = null;
+    let responseMade = false;
+    let countdownTimer;
+
+    const stimulusDiv = document.getElementById("stimulus");
+    const resultsDiv = document.getElementById("results");
+    const startBtn = document.getElementById("startBtn");
+    const showReportBtn = document.getElementById("showReportBtn");
+    const popup = document.getElementById("popup");
+    const instructionsDiv = document.getElementById("instructions");
+    const countdownDiv = document.getElementById("countdown");
+    const modeToggle = document.getElementById("modeToggle");
+    let rtChart, perfChart;
+
+    function hideInstructions() {
+      instructionsDiv.style.display = "none";
+      startBtn.style.display = "inline-block";
+      document.getElementById('subjectId').focus();
+    }
+
+    function getConfig() {
+      return {
+        AGE: parseInt(document.getElementById("subjectAge").value), 
+        SEX: document.getElementById("subjectSex").value,
+        NUM_TRIALS: parseInt(document.getElementById("numTrials").value),
+        STIMULUS_TIME: parseInt(document.getElementById("stimTime").value),
+        ISI: parseInt(document.getElementById("isi").value),
+        GO_PROBABILITY: parseFloat(document.getElementById("goProb").value),
+        TEXTURE: document.getElementById("textureToggle").checked,
+        GO_COLOR: document.getElementById("goColor").value,
+        NOGO_COLOR: document.getElementById("nogoColor").value,
+      };
+    }
+
+    function startTest() {
+      subjectId = document.getElementById("subjectId").value.trim();
+      const subjectAge = document.getElementById("subjectAge").value.trim();
+      const subjectSex = document.getElementById("subjectSex").value.trim();
+      if (!subjectId) {
+          showAlert("Subject ID is required!"); // <-- THIS IS THE NEW ALERT
+          return;
+      }
+        if (!subjectAge) { // Add this check
+            showAlert("Age is required!");
+            return;
+        }
+        if (!subjectSex) { // Add this check
+            showAlert("Sex is required!");
+            return;
+        }
+      config = getConfig();
+      trial = 0;
+      results = { 
+        reactionTimes: [], 
+        omissions: 0, 
+        correctInhibitions: 0, 
+        commissions: 0,
+        correctResponses: 0
+      };
+      resultsDiv.textContent = "";
+      showReportBtn.style.display = "none";
+      startBtn.style.display = "none";
+
+      let count = 3;
+      countdownDiv.textContent = count;
+      countdownTimer = setInterval(() => {
+        count--;
+        if (count === 0) {
+          clearInterval(countdownTimer);
+          countdownDiv.textContent = "";
+          nextTrial();
+        } else {
+          countdownDiv.textContent = count;
+        }
+      }, 1000);
+    }
+
+   function nextTrial() {
+  if (trial >= config.NUM_TRIALS) {
+    endTest();
+    return;
+  }
+  trial++;
+  responseMade = false;
+  trialActive = true;
+
+  if (Math.random() < config.GO_PROBABILITY) {
+    currentStimulus = "GO";
+    showStimulus(true);
+  } else {
+    currentStimulus = "NOGO";
+    showStimulus(false);
+  }
+
+  stimulusOnset = Date.now();
+
+  // main trial timeout
+  setTimeout(() => {
+    if (!trialActive) return; // already cleared
+    if (currentStimulus === "GO" && !responseMade) {
+      results.omissions++;
+      beep(400,200);
+      stimulusDiv.innerHTML = `<span style="color:red;font-size:48px;">❌ Missed!</span>`;
+      trialActive = false;
+      setTimeout(() => {
+        stimulusDiv.textContent = "";
+        setTimeout(nextTrial, config.ISI);
+      }, 200);
+      return;
+    }
+    if (currentStimulus === "NOGO" && !responseMade) {
+      results.correctInhibitions++;
+    }
+    trialActive = false;
+    stimulusDiv.textContent = "";
+    setTimeout(nextTrial, config.ISI);
+  }, config.STIMULUS_TIME);
+}
+
+
+    function showStimulus(isGo) {
+      if (config.TEXTURE) {
+        stimulusDiv.classList.remove("big");
+        stimulusDiv.innerHTML = isGo 
+          ? `<span style="color:${config.GO_COLOR};">✔</span>` 
+          : `<span style="color:${config.NOGO_COLOR};">✘</span>`;
+      } else {
+        stimulusDiv.classList.add("big");
+        stimulusDiv.innerHTML = isGo 
+          ? `<span style="color:${config.GO_COLOR};">●</span>` 
+          : `<span style="color:${config.NOGO_COLOR};">●</span>`;
+      }
+    }
+
+function handleKeydown(e) {
+  if (!stimulusOnset || !trialActive) return;
+  if (responseMade) return;
+
+  responseMade = true;
+  let rt = Date.now() - stimulusOnset;
+
+  if (currentStimulus === "GO") {
+    results.reactionTimes.push(rt);
+    results.correctResponses++;
+    trialActive = false;
+    stimulusDiv.textContent = "";
+    setTimeout(nextTrial, config.ISI);
+  } else if (currentStimulus === "NOGO") {
+    results.commissions++;
+    beep(400,200);
+    stimulusDiv.innerHTML = `<span style="color:red;font-size:48px;">❌ Error!</span>`;
+    trialActive = false;
+    setTimeout(() => {
+      stimulusDiv.textContent = "";
+      setTimeout(nextTrial, config.ISI);
+    }, config.STIMULUS_TIME - (Date.now() - stimulusOnset));
+  }
+}
+
+
+    function endTest() {
+      stimulusDiv.textContent = "";
+      startBtn.style.display = "inline-block";
+      showReportBtn.style.display = "inline-block";
+      resultsDiv.style.display = "block";
+
+      let avgRT = results.reactionTimes.length
+        ? (results.reactionTimes.reduce((a,b) => a+b, 0) / results.reactionTimes.length).toFixed(2)
+        : "N/A";
+
+      resultsDiv.textContent = 
+        `Test Finished!\n\n` +
+        `Subject: ${subjectId}\n` +
+        `Age: ${config.AGE}\n` +
+        `Sex: ${config.SEX}\n` +
+        `Average Reaction Time: ${avgRT} ms\n` +
+        `Correct Responses: ${results.correctResponses}\n` +
+        `Omissions: ${results.omissions}\n` +
+        `Correct Inhibitions: ${results.correctInhibitions}\n` +
+        `Commissions: ${results.commissions}`;
+    }
+
+    function showReport() {
+      popup.style.display = "flex";
+      if (rtChart) rtChart.destroy();
+      if (perfChart) perfChart.destroy();
+
+      rtChart = new Chart(document.getElementById("rtChart"), {
+        type: 'line',
+        data: {
+          labels: results.reactionTimes.map((_,i) => `Trial ${i+1}`),
+          datasets: [{
+            label: "Reaction Time (ms)",
+            data: results.reactionTimes,
+            borderColor: "#4caf50",
+            fill: false
+          }]
+        }
+      });
+
+      perfChart = new Chart(document.getElementById("perfChart"), {
+        type: 'bar',
+        data: {
+          labels: ["Correct", "Omissions", "Correct Inhibitions", "Commissions"],
+          datasets: [{
+            label: "Performance",
+            data: [results.correctResponses, results.omissions, results.correctInhibitions, results.commissions],
+            backgroundColor: ["#4caf50","#f44336","#2196f3","#ff9800"]
+          }]
+        }
+      });
+    }
+
+    function closePopup() {
+      popup.style.display = "none";
+    }
+
+    // Dark/Light mode toggle
+    modeToggle.addEventListener("click", () => {
+      document.body.classList.toggle("light");
+      modeToggle.textContent = document.body.classList.contains("light") ? "🌞" : "🌙";
+    });
+
+    document.addEventListener("keydown", handleKeydown);
+    startBtn.addEventListener("click", startTest);
+    showReportBtn.addEventListener("click", showReport);
+    document.getElementById("csvBtn").addEventListener("click", downloadCSV);
+    document.getElementById("pdfBtn").addEventListener("click", downloadPDF);
+
+    // CSV / PDF download functions same as before
+    function getFileName(ext) {
+      const ts = new Date().toISOString().replace(/[:.]/g,"-");
+      return `${subjectId}-${testName}_${ts}.${ext}`;
+    }
+    function downloadCSV() {
+      let csv = `Subject ID,${subjectId}\n`;
+      csv += `Age,${config.AGE}\n`;
+      csv += `Sex,${config.SEX}\n`;
+      csv += `Num Trials,${config.NUM_TRIALS}\nStimulus Time,${config.STIMULUS_TIME}\nISI,${config.ISI}\nGo Probability,${config.GO_PROBABILITY}\nUse Texture,${config.TEXTURE}\n\n`;
+      csv += "Trial,ReactionTime(ms),Type,Result\n";
+      results.reactionTimes.forEach((rt,i) => {
+        csv += `${i+1},${rt},GO,Correct\n`;
+      });
+      csv += `Summary,,,\n`;
+      csv += `Correct Responses,${results.correctResponses}\n`;
+      csv += `Omissions,${results.omissions}\n`;
+      csv += `Correct Inhibitions,${results.correctInhibitions}\n`;
+      csv += `Commissions,${results.commissions}\n`;
+
+      const blob = new Blob([csv], {type:"text/csv"});
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = getFileName("csv");
+      link.click();
+    }
+async function downloadPDF() {
+  const { jsPDF } = window.jspdf;
+  // Initialize PDF in A4 size with mm as units
+  const pdf = new jsPDF({
+    orientation: 'portrait',
+    unit: 'mm',
+    format: 'a4'
+  });
+
+  // --- 1. Layout & Page Setup ---
+  const pageWidth = pdf.internal.pageSize.getWidth();
+  const pageHeight = pdf.internal.pageSize.getHeight();
+  const margin = 15;
+  const gutter = 10; // Space between columns
+  const colWidth = (pageWidth - (margin * 2) - gutter) / 2;
+  const col1_x = margin;
+  const col2_x = margin + colWidth + gutter;
+  let y = 0; // Global Y-position tracker
+
+  // --- 2. Report Header ---
+  const now = new Date();
+  pdf.setFont('helvetica', 'bold');
+  pdf.setFontSize(18);
+  pdf.text('Go/No-Go Test Report', pageWidth / 2, 20, { align: 'center' });
+  
+  pdf.setFont('helvetica', 'normal');
+  pdf.setFontSize(9);
+  pdf.setTextColor(100);
+  pdf.text(`Date: ${now.toLocaleDateString()} | Time: ${now.toLocaleTimeString()}`, pageWidth / 2, 27, { align: 'center' });
+  
+  pdf.setLineWidth(0.5);
+  pdf.line(margin, 32, pageWidth - margin, 32);
+  
+  // Set starting Y position for columns
+  y = 40;
+  let y_col1 = y;
+  let y_col2 = y;
+
+  // --- 3. Left Column (Test Data) ---
+
+  // Configuration Section
+  pdf.setFont('helvetica', 'bold');
+  pdf.setFontSize(12);
+  pdf.text('Test Configuration', col1_x, y_col1);
+  y_col1 += 8;
+
+  const configData = {
+    'Subject ID': subjectId, 'Age': config.AGE, 'Sex': config.SEX,
+    'Number of Trials': config.NUM_TRIALS, 'Stimulus Time (ms)': config.STIMULUS_TIME,
+    'ISI (ms)': config.ISI, 'Go Probability': config.GO_PROBABILITY,
+  };
+
+  pdf.setFontSize(10);
+  for (const [label, value] of Object.entries(configData)) {
+    pdf.setFont('helvetica', 'bold');
+    pdf.text(label + ':', col1_x, y_col1, { maxWidth: colWidth });
+    pdf.setFont('helvetica', 'normal');
+    pdf.text(String(value), col1_x + 45, y_col1, { maxWidth: colWidth - 45 });
+    y_col1 += 6;
+  }
+
+  // Performance Summary Section
+  y_col1 += 5;
+  pdf.setFont('helvetica', 'bold');
+  pdf.setFontSize(12);
+  pdf.text('Performance Summary', col1_x, y_col1);
+  y_col1 += 8;
+
+  let avgRT = results.reactionTimes.length
+    ? (results.reactionTimes.reduce((a,b) => a+b, 0) / results.reactionTimes.length).toFixed(2)
+    : "N/A";
+  
+  const summaryData = {
+    'Avg. Reaction Time': `${avgRT} ms`,
+    'Correct Responses': results.correctResponses,
+    'Omissions': results.omissions,
+    'Correct Inhibitions': results.correctInhibitions,
+    'Commissions': results.commissions,
+  };
+
+  pdf.setFontSize(10);
+  for (const [label, value] of Object.entries(summaryData)) {
+    pdf.setFont('helvetica', 'bold');
+    pdf.text(label + ':', col1_x, y_col1);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text(String(value), col1_x + 45, y_col1);
+    y_col1 += 6;
+  }
+  
+  // Metrics Explained Section
+  y_col1 += 5;
+  pdf.setFont('helvetica', 'bold');
+  pdf.setFontSize(12);
+  pdf.text('Metrics Explained', col1_x, y_col1);
+  y_col1 += 6;
+
+  pdf.setFont('helvetica', 'normal');
+  pdf.setFontSize(9);
+  pdf.setTextColor(80);
+  pdf.text("Omissions: Failing to respond to a 'Go' stimulus (a miss).", col1_x, y_col1, { maxWidth: colWidth });
+  y_col1 += 8;
+  pdf.text("Commissions: Incorrectly responding to a 'No-Go' stimulus (a false alarm).", col1_x, y_col1, { maxWidth: colWidth });
+
+  // --- 4. Right Column (Charts) ---
+  const rtImg = document.getElementById("rtChart").toDataURL("image/png");
+  const perfImg = document.getElementById("perfChart").toDataURL("image/png");
+  
+  const graphWidth = colWidth;
+  const graphHeight = graphWidth / 2; // Maintain 2:1 aspect ratio
+
+  // Reaction Time Chart
+  pdf.setFont('helvetica', 'bold');
+  pdf.setFontSize(12);
+  pdf.text("Reaction Time Chart", col2_x, y_col2);
+  y_col2 += 6;
+  pdf.addImage(rtImg, "PNG", col2_x, y_col2, graphWidth, graphHeight);
+  y_col2 += graphHeight + 10;
+
+  // Performance Chart
+  pdf.setFont('helvetica', 'bold');
+  pdf.setFontSize(12);
+  pdf.text("Performance Chart", col2_x, y_col2);
+  y_col2 += 6;
+  pdf.addImage(perfImg, "PNG", col2_x, y_col2, graphWidth, graphHeight);
+
+  // --- 5. Footer ---
+  const pageCount = pdf.internal.getNumberOfPages();
+  for (let i = 1; i <= pageCount; i++) {
+    pdf.setPage(i);
+    pdf.setFontSize(9);
+    pdf.setTextColor(150);
+    const footerText = `Page ${i} of ${pageCount} | Go/No-Go Test Report`;
+    pdf.text(footerText, pageWidth / 2, pageHeight - 10, { align: 'center' });
+  }
+
+  // --- 6. Save the PDF ---
+  pdf.save(getFileName("pdf"));
+}
+  </script>
+
+</body>
+</html>
