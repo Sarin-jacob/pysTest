@@ -476,6 +476,8 @@
   const testName = "GoNoGo";
   const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
+
+  
   function beep(freq=440, duration=150) {
     const osc = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
@@ -507,6 +509,8 @@
     }
 
     document.getElementById('subjectId').value = '';
+    document.getElementById('subjectAge').value = '';
+    document.getElementById('subjectSex').value = '';
     let trial, config, results, subjectId;
     let currentStimulus = null;
     let stimulusOnset = null;
@@ -706,8 +710,18 @@ function handleKeydown(e) {
             borderColor: "#4caf50",
             fill: false
           }]
+        },
+        options: {
+            // ...animationOption, // Add this
+            responsive: false,
+            plugins: {
+                title: { display: true, text: 'Reaction Time (Correct Trials)', font: { size: 16 } },
+                legend: { display: false }
+            },
+            scales: { y: { title: { display: true, text: 'RT (ms)' } } }
         }
-      });
+    });
+     
 
       perfChart = new Chart(document.getElementById("perfChart"), {
         type: 'bar',
@@ -718,6 +732,15 @@ function handleKeydown(e) {
             data: [results.correctResponses, results.omissions, results.correctInhibitions, results.commissions],
             backgroundColor: ["#4caf50","#f44336","#2196f3","#ff9800"]
           }]
+        },
+        options: {
+            // ...animationOption, // Add this
+            responsive: false,
+            plugins: {
+                title: { display: true, text: 'Performance Chart', font: { size: 16 } },
+                legend: { display: false }
+            },
+            scales: { y: { beginAtZero: true,title: { display: true, text: 'Count' },ticks: { stepSize: 1 } } }
         }
       });
     }
