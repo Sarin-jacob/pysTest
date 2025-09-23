@@ -162,6 +162,9 @@
         text-align: left;
         line-height: 1.7;
     }
+      /* centered countdown overlay (large) */
+  #countdownOverlay { display:none; position:fixed; inset:0; z-index:2000; background: rgba(0,0,0,0.45); backdrop-filter: blur(2px); align-items:center; justify-content:center; }
+  #countdownNum { font-size: 160px; font-weight:800; color:var(--accent-color); }
   /* responsive */
   @media (max-width:900px){#sidebar{display:none} .container{flex-direction:column} #main{padding:12px}}
 </style>
@@ -218,7 +221,7 @@
 
     <label>Orientation (multiples of 45°)</label>
     <select id="orientation">
-      <option value="0">0°</option>
+      <option value="0" selected>0°</option>
       <option value="45">45°</option>
       <option value="90">90°</option>
       <option value="135">135°</option>
@@ -226,20 +229,21 @@
       <option value="225">225°</option>
       <option value="270">270°</option>
       <option value="315">315°</option>
-      <option value="random" selected>Random (45° multiples)</option>
+      <option value="random">Random (45° multiples)</option>
     </select>
 
     <div style="margin-top:12px" class="row">
       <button id="openBindings" class="btn">Bindings</button>
-      <button id="loadDefaults" class="btn">Load Defaults</button>
+      <!-- <button id="loadDefaults" class="btn">Load Defaults</button> -->
+      <button id="restartBtn" class="btn">Reset</button>
     </div>
 
     <div style="margin-top:12px" class="row">
       <button id="startBtn" class="btn primary">Start Test</button>
-      <button id="restartBtn" class="btn">Reset</button>
+      <button id="openReport" class="btn">Open Report</button>
     </div>
 
-    <!-- <div style="margin-top:14px" class="muted">Tip: Open Bindings → click a color row → press desired key → Enter to save.</div> -->
+    <div style="margin-top:14px" class="muted">Tip: Open Bindings → click a color row → press desired key → Enter to save.</div>
   </aside>
 
   <main id="main">
@@ -260,6 +264,7 @@
       <div id="resultsSummary" style="width:100%;max-width:980px;display:none;margin-top:8px"></div>
       <button id="modeToggle">🌙</button>
     </div>
+    <div id="countdownOverlay"><div id="countdownNum">3</div></div>
   </main>
 </div>
 
@@ -393,6 +398,9 @@ document.getElementById('numColors').value =  '3';
   const modernAlert = document.getElementById('modernAlert');
   const modernAlertMessage = document.getElementById('modernAlertMessage');
   const modeToggle = document.getElementById("modeToggle");
+  const countOverlay = document.getElementById('countdownOverlay');
+  const countNum = document.getElementById('countdownNum');
+  const  openReport = document.getElementById('openReport');
 
   // state
   let bindings = {}; // colorName -> key (lowercase)
@@ -456,6 +464,11 @@ document.getElementById('numColors').value =  '3';
       cn.style.borderRadius = '8px';
       el.appendChild(kd); el.appendChild(cn);
       keybarEl.appendChild(el);
+      //simulate key
+    el.addEventListener('click', () => {
+    const boundKey = (bindings[c.name] || '').toLowerCase();
+    if(boundKey) handleResponseKey(boundKey);
+  });
     });
   }
 
@@ -639,6 +652,9 @@ document.getElementById('numColors').value =  '3';
     });
   }
 
+  // start test with countdown overlay centered
+let countdownInterval = null;
+
   // start test
   function startTest(){
     // validate subject info
@@ -660,18 +676,17 @@ document.getElementById('numColors').value =  '3';
     results = []; currentIndex = -1;
     trials = generateTrials();
 
-    // small countdown like gng-export (3..1)
-    let count = 3; statusEl.textContent = count;
-    startBtn.disabled = true;
-    const cd = setInterval(()=>{
-      count--;
-      if(count<=0){
-        clearInterval(cd);
-        statusEl.textContent = 'Running...';
-        nextTrial();
-      } else { statusEl.textContent = count; }
-    },1000);
-  }
+  // show centered countdown overlay (3..1)
+  let c = 3; countNum.textContent = c; countOverlay.style.display = 'flex';
+  countdownInterval = setInterval(()=> {
+    c--;
+    if(c<=0){
+      clearInterval(countdownInterval); countOverlay.style.display = 'none'; statusEl.textContent='Running...'; nextTrial();
+    } else {
+      countNum.textContent = c;
+    }
+  },1000);
+}
 
   function endTest(){
     startBtn.disabled = false;
@@ -694,7 +709,7 @@ document.getElementById('numColors').value =  '3';
     const commissions = results.filter(r=>r.keyPressed && !r.correct).length;
     const rtList = results.filter(r=>r.RT).map(r=>Number(r.RT));
     const meanRT = rtList.length ? Math.round(rtList.reduce((a,b)=>a+b,0)/rtList.length) : '-';
-    resultsSummaryEl.style.display = 'block';
+    resultsSummaryEl.style.display = 'none'; //hide summary was block
     resultsSummaryEl.innerHTML = `
       <div style="background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:12px;border-radius:10px">
         <strong>Summary</strong>
@@ -1075,10 +1090,11 @@ async function renderCharts(disableAnimation = false) {
   // UI wiring
   openBindingsBtn.addEventListener('click', ()=> openBindings());
   closeBindingsBtn.addEventListener('click', ()=> closeBindings());
-  loadDefaultsBtn.addEventListener('click', ()=> { loadDefaultBindings(parseInt(numColorsEl.value,10)); renderBindingsList(); });
+  // loadDefaultsBtn.addEventListener('click', ()=> { loadDefaultBindings(parseInt(numColorsEl.value,10)); renderBindingsList(); });
   numColorsEl.addEventListener('change', ()=> { loadDefaultBindings(parseInt(numColorsEl.value,10)); rebuildKeybar(); renderBindingsList(); });
   matchPctEl.addEventListener('input', ()=> { matchPctLabel.textContent = matchPctEl.value + '%'; });
   startBtn.addEventListener('click', startTest);
+  openReport.addEventListener('click', ()=> { if(results.length===0) showAlert('No results yet — run a test first'); else { popup.style.display='flex'; renderCharts(); }});
   restartBtn.addEventListener('click', ()=> location.reload());
   csvBtn.addEventListener('click', downloadCSV);
   pdfBtn.addEventListener('click', downloadPDF);
@@ -1115,7 +1131,7 @@ async function renderCharts(disableAnimation = false) {
     stimTimeEl.value = 1500;
     isiEl.value = 800;
     numColorsEl.value = 3;
-    orientationEl.value = 'random';
+    orientationEl.value = '0';
     matchPctEl.value = 50;
     matchPctLabel.textContent = '50%';
     respondToEl.value = 'color';

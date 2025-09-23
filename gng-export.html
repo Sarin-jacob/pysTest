@@ -303,7 +303,7 @@
     }
     input[type="color"]::-webkit-color-swatch {
         border: 1px solid var(--input-border);
-        border-radius: 50%;
+        /* border-radius: 10%; */
     }
 
     hr.rounded {
@@ -395,8 +395,6 @@
         <input id="isi" type="number" value="1000">
         <label>Go Probability</label>
         <input id="goProb" type="number" step="0.1" value="0.7">
-      </div>
-  </details>
     <hr class="rounded">
     <div id="textureDiv" style="display: inline-flex; gap: 30px;">
     <label>Use Texture (✔ ✘)</label>
@@ -411,8 +409,10 @@
     </div>
     <div class="colour-div">
     <label>No-Go Color</label>
-    <input id="nogoColor" class="color-input" type="color" value="ffa500">
+    <input id="nogoColor" class="color-input" type="color" value="#ffa500">
+      </div>
     </div>
+  </details>
   </div>
 
   <div id="main">
@@ -516,6 +516,7 @@
     let stimulusOnset = null;
     let responseMade = false;
     let countdownTimer;
+    let trialLog = [];
 
     const stimulusDiv = document.getElementById("stimulus");
     const resultsDiv = document.getElementById("results");
@@ -572,6 +573,7 @@
         commissions: 0,
         correctResponses: 0
       };
+      trialLogs = []; 
       resultsDiv.textContent = "";
       showReportBtn.style.display = "none";
       startBtn.style.display = "none";
@@ -607,7 +609,8 @@
     showStimulus(false);
   }
 
-  stimulusOnset = Date.now();
+  stimulusOnset = performance.now();
+
 
   // main trial timeout
   setTimeout(() => {
@@ -617,6 +620,13 @@
       beep(400,200);
       stimulusDiv.innerHTML = `<span style="color:red;font-size:48px;">❌ Missed!</span>`;
       trialActive = false;
+      trialLogs.push({
+        trial,
+        stimulus: "GO",
+        responded: false,
+        rt: "",
+        outcome: "Omission"
+      });
       setTimeout(() => {
         stimulusDiv.textContent = "";
         setTimeout(nextTrial, config.ISI);
@@ -628,6 +638,13 @@
     }
     trialActive = false;
     stimulusDiv.textContent = "";
+    trialLogs.push({
+      trial,
+      stimulus: "NOGO",
+      responded: false,
+      rt: "",
+      outcome: "Correct Inhibition"
+    });
     setTimeout(nextTrial, config.ISI);
   }, config.STIMULUS_TIME);
 }
@@ -652,23 +669,39 @@ function handleKeydown(e) {
   if (responseMade) return;
 
   responseMade = true;
-  let rt = Date.now() - stimulusOnset;
+  let rt = Math.round(performance.now() - stimulusOnset);
+
 
   if (currentStimulus === "GO") {
     results.reactionTimes.push(rt);
     results.correctResponses++;
     trialActive = false;
     stimulusDiv.textContent = "";
+    trialLogs.push({
+      trial,
+      stimulus: "GO",
+      responded: true,
+      rt: rt,
+      outcome: "Correct"
+    });
     setTimeout(nextTrial, config.ISI);
   } else if (currentStimulus === "NOGO") {
     results.commissions++;
     beep(400,200);
     stimulusDiv.innerHTML = `<span style="color:red;font-size:48px;">❌ Error!</span>`;
     trialActive = false;
+    trialLogs.push({
+      trial,
+      stimulus: "NOGO",
+      responded: true,
+      rt: rt,
+      outcome: "Commission"
+    });
+    const remaining = Math.max(0, config.STIMULUS_TIME - (performance.now() - stimulusOnset));
     setTimeout(() => {
-      stimulusDiv.textContent = "";
-      setTimeout(nextTrial, config.ISI);
-    }, config.STIMULUS_TIME - (Date.now() - stimulusOnset));
+    stimulusDiv.textContent = "";
+    setTimeout(nextTrial, config.ISI);
+  }, remaining);
   }
 }
 
@@ -677,7 +710,7 @@ function handleKeydown(e) {
       stimulusDiv.textContent = "";
       startBtn.style.display = "inline-block";
       showReportBtn.style.display = "inline-block";
-      resultsDiv.style.display = "block";
+      resultsDiv.style.display = "none"; //hide summary intial block
 
       let avgRT = results.reactionTimes.length
         ? (results.reactionTimes.reduce((a,b) => a+b, 0) / results.reactionTimes.length).toFixed(2)
@@ -756,6 +789,9 @@ function handleKeydown(e) {
     });
 
     document.addEventListener("keydown", handleKeydown);
+    // Treat clicks/taps as a "Go" key press
+    document.getElementById("main").addEventListener("pointerdown", () => {
+        if (trialActive) handleKeydown({ type: "click" });},{passive:true});
     startBtn.addEventListener("click", startTest);
     showReportBtn.addEventListener("click", showReport);
     document.getElementById("csvBtn").addEventListener("click", downloadCSV);
@@ -767,14 +803,15 @@ function handleKeydown(e) {
       return `${subjectId}-${testName}_${ts}.${ext}`;
     }
     function downloadCSV() {
+      if (!trialLogs.length) { showAlert('No results to export'); return; }
       let csv = `Subject ID,${subjectId}\n`;
       csv += `Age,${config.AGE}\n`;
       csv += `Sex,${config.SEX}\n`;
       csv += `Num Trials,${config.NUM_TRIALS}\nStimulus Time,${config.STIMULUS_TIME}\nISI,${config.ISI}\nGo Probability,${config.GO_PROBABILITY}\nUse Texture,${config.TEXTURE}\n\n`;
-      csv += "Trial,ReactionTime(ms),Type,Result\n";
-      results.reactionTimes.forEach((rt,i) => {
-        csv += `${i+1},${rt},GO,Correct\n`;
-      });
+      csv += "Trial,Stimulus,Responded,RT_ms,Outcome\n";
+       trialLogs.forEach(t => {
+          csv += `${t.trial},${t.stimulus},${t.responded ? 1 : 0},${t.rt},${t.outcome}\n`;
+        });
       csv += `Summary,,,\n`;
       csv += `Correct Responses,${results.correctResponses}\n`;
       csv += `Omissions,${results.omissions}\n`;

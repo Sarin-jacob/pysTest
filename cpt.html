@@ -1,0 +1,729 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>AX-CPT</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --font-family: 'Inter', sans-serif;
+    --border-radius: 10px;
+    --transition-speed: 0.28s;
+    --bg-color: #121212;
+    --text-color: #E0E0E0;
+    --sidebar-bg: #1E1E1E;
+    --sidebar-border: #333;
+    --input-bg: #2C2C2C;
+    --input-border: #444;
+    --input-text: #E0E0E0;
+    --button-bg: #333;
+    --button-text: #E0E0E0;
+    --accent-color: #3B82F6;
+    --shadow-color: rgba(0,0,0,0.22);
+  }
+  body.light {
+    --bg-color: #F4F4F5;
+    --text-color: #18181B;
+    --sidebar-bg: #FFFFFF;
+    --sidebar-border: #E4E4E7;
+    --input-bg: #FFFFFF;
+    --input-border: #D4D4D8;
+    --input-text: #18181B;
+    --button-bg: #E4E4E7;
+    --button-text: #18181B;
+    --accent-color: #2563EB;
+    --shadow-color: rgba(0, 0, 0, 0.10);
+  }
+  html,body{height:100%;margin:0;font-family:var(--font-family);background:var(--bg-color);color:var(--text-color);}
+  body {transition: background var(--transition-speed) ease, color var(--transition-speed) ease;}
+  .container {display:flex;height:100vh;gap:0;}
+  #sidebar {
+    width:320px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    padding:20px;box-sizing:border-box;border-right:1px solid var(--sidebar-border);box-shadow: 2px 0 18px var(--shadow-color);overflow:auto;
+  }
+  #sidebar h2{margin:0 0 12px 0;font-size:20px;color:var(--accent-color)}
+  label{display:block;font-size:13px;margin:10px 0 6px;color:var(--input-text)}
+  input[type="text"], input[type="number"], select, input[type="range"] {
+    width:100%;padding:9px;border-radius:10px;border:1px solid var(--input-border);background:var(--input-bg);color:var(--input-text);box-sizing: border-box;
+  }
+  .row{display:flex;gap:8px}
+  .btn{padding:8px 12px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:var(--button-bg);color:var(--button-text);cursor:pointer;}
+  .btn.primary{background:linear-gradient(180deg,var(--accent-color),#2563eb);color:#fff;font-weight:600;border-color:transparent}
+  .muted{color:rgb(from var(--button-text) r g b / 0.5);font-size:14px}
+  details.advanced-config{margin-top:12px;border:1px solid var(--input-border);border-radius:10px;padding:6px;background:transparent}
+  details.advanced-config summary{outline:none;padding:8px;cursor:pointer}
+  #main {flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:28px;gap:12px}
+  #title {font-size:20px;margin:0;align-self:flex-start;color:var(--text-color)}
+  .stage {width:min(920px,100%); display:flex;flex-direction:column;align-items:center;gap:12px;margin-top:6px;}
+  .stimulus {width:100%;height:260px;border-radius:14px;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));box-shadow:0 8px 30px rgba(2,6,23,0.5);font-size:120px;font-weight:700;user-select:none;position:relative;overflow:hidden;}
+  .statusRow {display:flex;gap:12px;align-items:center;width:100%;justify-content:center;}
+  .infoBox {background:var(--sidebar-bg);padding:10px;border-radius:10px;color:var(--input-text);font-size:14px}
+  #resultsSummary {width:100%;max-width:920px;display:none;margin-top:8px}
+  /* popup: smaller so it fits one window */
+  #popup {display:none;position:fixed;inset:0;align-items:center;justify-content:center;background:rgba(0,0,0,0.5);z-index:95}
+  .popup-card{background:var(--sidebar-bg);padding:14px;border-radius:12px;max-width:820px;width:92%;max-height:80vh;overflow:auto;box-shadow:0 14px 40px rgba(0,0,0,0.6)}
+  canvas{background:#fff;border-radius:8px;display:block;margin:12px auto}
+  #modernAlert {position:fixed;top:-120px;left:50%;transform:translateX(-50%);background:#ff4757;color:white;padding:12px 22px;border-radius:8px;z-index:9999;transition:top .4s}
+  #modernAlert.show{top:18px}
+  #modeToggle {position: absolute;top: 15px;right: 15px;cursor: pointer;background: var(--button-bg);color: var(--button-text);padding: 8px 12px;border-radius: 10px;font-size: 18px;}
+  /* centered countdown overlay (large) */
+  #countdownOverlay { display:none; position:fixed; inset:0; z-index:2000; background: rgba(0,0,0,0.45); backdrop-filter: blur(2px); align-items:center; justify-content:center; }
+  #countdownNum { font-size: 160px; font-weight:800; color:var(--accent-color); }
+  /* small responsive adjustments */
+  @media (max-width:900px){#sidebar{display:none} .container{flex-direction:column} #main{padding:12px} .stimulus{height:180px;font-size:88px}}
+  .small-note { font-size:12px;color:var(--input-text);opacity:0.8 }
+  .switch { position: relative; display:inline-block; min-width:44px; height:24px; }
+  .switch input { display:none; }
+  .slider { position:absolute; inset:0; background:#555; border-radius:24px; transition:0.2s; }
+  .slider:before { content:""; position:absolute; left:4px; top:4px; width:16px; height:16px; background:#fff; border-radius:50%; transition:0.2s; }
+  .switch input:checked + .slider { background: var(--accent-color); }
+  .switch input:checked + .slider:before { transform: translateX(20px); }
+  /* form small grid for letter checkboxes */
+  .letters-grid { display:grid; grid-template-columns: repeat(3,1fr); gap:6px; margin-top:6px; }
+  .letters-grid label { display:flex; align-items:center; gap:8px; font-size:13px; }
+  
+  #instructions {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(5px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+  #instructions > div { background:var(--sidebar-bg); padding:24px; border-radius:12px; max-width:700px; width:92% }
+    .instructions {
+    width:100%;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    padding:14px;border-radius:12px;box-shadow:0 8px 30px rgba(2,6,23,0.5);
+  }
+</style>
+</head>
+<body>
+<div id="modernAlert"><p id="modernAlertMessage" style="margin:0"></p></div>
+
+<div class="container">
+  <aside id="sidebar" aria-label="Configuration">
+    <h2>Config</h2>
+
+    <label>Subject ID (required)</label>
+    <input id="subjectId" type="text" placeholder="Enter Subject ID">
+
+    <label>Age</label>
+    <input id="subjectAge" type="number" placeholder="Enter Age">
+
+    <label>Sex</label>
+    <select id="subjectSex">
+      <option value="">Select Sex</option><option>Male</option><option>Female</option><option>Other</option>
+    </select>
+
+    <label>Test Type</label>
+    <select id="testType">
+      <option value="CPT">CPT (Target = X)</option>
+      <option value="CPT-AX">CPT-AX (Target = X only after A)</option>
+    </select>
+
+    <label>NUM_TRIALS</label>
+    <input id="numTrials" type="number" value="30" min="4">
+
+    <details class="advanced-config">
+      <summary>Advanced Config</summary>
+      <div style="padding:8px">
+        <label>STIMULUS_TIME (ms)</label>
+        <input id="stimTime" type="number" value="600">
+        <label>ISI (ms)</label>
+        <input id="isi" type="number" value="500">
+        <label id="goProbLabel">Target Probability (CPT)</label>
+        <input id="goProb" type="number" step="0.05" min="0" max="1" value="0.4">
+        <label id="axRateLabel" style="margin-top:8px">AX Pair Rate (fraction, CPT-AX)</label>
+        <input id="axRate" type="number" step="0.01" min="0" max="0.4" value="0.2">
+
+        <hr style="margin:10px 0;border:none;border-top:1px solid var(--input-border)">
+
+        <label>Responses key(s)</label>
+        <div style="display:flex;gap:8px">
+          <input id="targetKey" type="text" value="Space" style="margin-bottom: 5px;" placeholder="Target key">
+          <input id="nonTargetKey" type="text" value="N" style="margin-bottom: 5px;" placeholder="Non-target key">
+        </div>
+        <div class="small-note">Press the named key (e.g., Space, Enter, or single letters).</div>
+
+        <hr class="input_hide" style="margin:10px 0;border:none;border-top:1px solid var(--input-border)">
+
+        <label class="input_hide">Color Mode (toggle)</label>
+        <div style="display:flex;align-items:center;gap:10px">
+          <label class="switch"><input id="colorMode" type="checkbox"><span class="slider"></span></label>
+          <div class="small-note">When ON, letters appear in one of two colors.</div>
+        </div>
+        <div class="input_hide" style="display:flex;gap:8px;margin-top:8px">
+          <div style="flex:1">
+            <label>Color A (target)</label>
+            <input id="colorA" type="color" value="#3b82f6">
+          </div>
+          <div style="flex:1">
+            <label>Color B (distractor)</label>
+            <input id="colorB" type="color" value="#ef4444">
+          </div>
+        </div>
+        <div class="input_hide" style="margin-top:8px">
+          <label><input id="requireAColor" type="checkbox"> Require preceding A to be in Color A for AX to count</label>
+        </div>
+
+        <hr class="input_hide" style="margin:10px 0;border:none;border-top:1px solid var(--input-border)">
+
+        <label class="input_hide">Extra distractor letters (toggle/select)</label>
+        <div class="input_hide" style="display:flex;gap:8px;align-items:center">
+          <label class="switch"><input id="extraLettersToggle" type="checkbox"><span class="slider"></span></label>
+          <div class="small-note">When ON, choose which letters to include as distractors (B..F)</div>
+        </div>
+        <div id="lettersGrid" class="letters-grid" style="display:none;margin-top:8px">
+          <label><input type="checkbox" class="distractorLetter" value="B" checked> B</label>
+          <label><input type="checkbox" class="distractorLetter" value="C"> C</label>
+          <label><input type="checkbox" class="distractorLetter" value="D"> D</label>
+          <label><input type="checkbox" class="distractorLetter" value="E"> E</label>
+          <label><input type="checkbox" class="distractorLetter" value="F"> F</label>
+          <label><input type="checkbox" class="distractorLetter" value="G"> G</label>
+        </div>
+
+      </div>
+    </details>
+
+    <div style="margin-top:12px" class="row">
+      <button id="startBtn" class="btn primary">Start Test</button>
+      <button id="resetBtn" class="btn">Reset</button>
+    </div>
+
+    <div style="margin-top:12px" class="row">
+      <button id="openReport" class="btn">Open Report</button>
+      <button id="saveDefaults" class="btn">Save Defaults</button>
+    </div>
+
+    <div style="margin-top:12px" class="muted">Tip: In AX-CPT you respond differently to targets vs non-targets. Use Color Mode to add context cues.</div>
+  </aside>
+
+  <main id="main">
+    <div id="title">AX-CPT / CPT</div>
+
+    <div class="stage">
+      <div class="statusRow" style="width:100%">
+        <div class="infoBox" id="status">Ready. Configure and press Start Test.</div>
+        <button id="modeToggle">🌙</button>
+      </div>
+
+      <div id="countdownOverlay"><div id="countdownNum">3</div></div>
+
+      <div class="stimulus" id="stimulus" role="status" aria-live="polite">
+        <div id="stimLetter">—</div>
+      </div>
+
+      <div style="display:flex;gap:8px;align-items:center">
+        <button id="targetBtn" class="btn">Target (?)</button>
+        <button id="nonTargetBtn" class="btn">Non-target (?)</button>
+        <div class="muted">You can use the on-screen buttons or press configured keys.</div>
+      </div>
+
+      <div id="resultsSummary" style="width:100%;max-width:920px;display:none;margin-top:8px"></div>
+    </div>
+  </main>
+</div>
+
+<!-- Popup for report -->
+<div id="popup">
+  <div class="popup-card">
+    <h2 style="margin-top:0">AX-CPT Report</h2>
+
+    <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center">
+      <canvas id="rtChart" width="420" height="210"></canvas>
+      <canvas id="perfChart" width="420" height="210"></canvas>
+    </div>
+
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
+      <button id="csvBtn" class="btn">Download CSV</button>
+      <button id="pdfBtn" class="btn">Download PDF</button>
+      <button id="closePopup" class="btn">Close</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- Instructions overlay -->
+<div id="instructions">
+  <div>
+    <h2>Welcome to the CPT / CPT-AX Test</h2>
+    <p>
+      CPT (X): press the response key when you see <b>X</b>.<br>
+      CPT-AX: press only when an <b>X</b> appears immediately after <b>A</b> (i.e., an AX pair).<br><br>
+      Measure: Reaction times, omissions (missed targets), commissions (responses on non-targets), and correct inhibitions.<br><br>
+      Use the Report button to download CSV and PDF (charts included).
+    </p>
+    <div style="text-align:center;margin-top:8px">
+      <button class="btn primary" onclick="hideInstructions()" autofocus>Continue</button>
+    </div>
+  </div>
+</div>
+
+<!-- libs -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://unpkg.com/jspdf@latest/dist/jspdf.umd.min.js"></script>
+
+<script>
+/* AX-CPT full implementation
+   - Two-button responses (target / non-target)
+   - CPT and CPT-AX
+   - Color mode with two colors and optional requirement of A's color
+   - Extra distractor letter toggles
+   - Centered big countdown overlay
+   - Smaller report popup that fits one window
+   - CSV + PDF export + charts
+*/
+
+// helpers
+const $ = id => document.getElementById(id);
+function showAlert(msg){ const a=$('modernAlert'); $('modernAlertMessage').textContent=msg; a.classList.add('show'); clearTimeout(window._aT); window._aT=setTimeout(()=>a.classList.remove('show'),3000);}
+function beep(freq=440,dur=120){ if(!window.audioCtx) window.audioCtx = new (window.AudioContext||window.webkitAudioContext)(); const ctx=window.audioCtx; const o=ctx.createOscillator(); const g=ctx.createGain(); o.connect(g); g.connect(ctx.destination); o.type='sine'; o.frequency.value=freq; g.gain.setValueAtTime(0.08, ctx.currentTime); o.start(); o.stop(ctx.currentTime+dur/1000); }
+
+// DOM refs
+const subjectIdEl = $('subjectId'), subjectAgeEl = $('subjectAge'), subjectSexEl = $('subjectSex');
+const testTypeEl = $('testType'), numTrialsEl = $('numTrials'), stimTimeEl = $('stimTime'), isiEl = $('isi');
+const goProbEl = $('goProb'), axRateEl = $('axRate');
+const targetKeyEl = $('targetKey'), nonTargetKeyEl = $('nonTargetKey');
+const colorModeEl = $('colorMode'), colorAEl = $('colorA'), colorBEl = $('colorB'), requireAColorEl = $('requireAColor');
+const extraLettersToggle = $('extraLettersToggle'), lettersGrid = $('lettersGrid');
+const startBtn = $('startBtn'), resetBtn = $('resetBtn'), openReport = $('openReport'), saveDefaults = $('saveDefaults');
+const stimDiv = $('stimLetter'), statusEl = $('status'), resultsSummary = $('resultsSummary');
+const popup = $('popup'), closePopup = $('closePopup'), csvBtn = $('csvBtn'), pdfBtn = $('pdfBtn');
+const rtCanvas = $('rtChart'), perfCanvas = $('perfChart');
+const countOverlay = $('countdownOverlay'), countNum = $('countdownNum');
+const targetBtn = $('targetBtn'), nonTargetBtn = $('nonTargetBtn');
+const modeToggle = $('modeToggle');
+
+let trials = [], currentIndex = -1, awaiting = false, stimShownAt = 0;
+let stimTimeout = null, isiTimeout = null;
+let results = [], rtList = [], omissions=0, commissions=0, correctResponses=0, correctInhibitions=0;
+let rtChart=null, perfChart=null;
+
+updateConfigVisibility();
+updateKeyLabels();
+// letters pool helpers
+const BASE_DISTRACTORS = ['B','C','D'];
+// load defaults and wire UI
+window.addEventListener('load', ()=>{
+  if(localStorage['ax_seen_instructions'] !== '1') { /* show instructions? we don't have overlay here */ localStorage['ax_seen_instructions']='1'; }
+  // restore basic advanced values
+  ['numTrials','stimTime','isi','goProb','axRate','targetKey','nonTargetKey'].forEach(k => { if(localStorage[k]!==undefined && $(k)) $(k).value = localStorage[k]; });
+  subjectIdEl.value=''; subjectAgeEl.value=''; subjectSexEl.value='';
+  // letters grid toggling
+  extraLettersToggle.addEventListener('change', ()=>{
+    lettersGrid.style.display = extraLettersToggle.checked ? 'grid' : 'none';
+  });
+  // button wiring
+  startBtn.addEventListener('click', startTest);
+  resetBtn.addEventListener('click', resetAll);
+  openReport.addEventListener('click', ()=> { if(results.length===0) showAlert('No results yet — run a test first'); else { popup.style.display='flex'; renderCharts(); }});
+  closePopup.addEventListener('click', ()=> popup.style.display='none');
+  csvBtn.addEventListener('click', downloadCSV);
+  pdfBtn.addEventListener('click', downloadPDF);
+  saveDefaults.addEventListener('click', saveDefaultsFn);
+  // on-screen response buttons
+  targetBtn.addEventListener('click', ()=> simulateKey('target'));
+  nonTargetBtn.addEventListener('click', ()=> simulateKey('nontarget'));
+  // keyboard listener
+  document.addEventListener('keydown', handleKeyDown);
+  modeToggle.addEventListener('click', ()=> { document.body.classList.toggle('light'); modeToggle.textContent = document.body.classList.contains('light') ? '🌞' : '🌙'; });
+  testTypeEl.addEventListener('change', updateConfigVisibility);
+//   updateConfigVisibility();
+targetKeyEl.addEventListener('input', updateKeyLabels);
+nonTargetKeyEl.addEventListener('input', updateKeyLabels);
+});
+
+function hideInstructions(){
+  document.getElementById('instructions').style.display = 'none';
+  document.getElementById('subjectId').focus();
+}
+function updateKeyLabels() {
+  targetBtn.textContent = `Target (${normKeyName(targetKeyEl.value)})`;
+  if (testTypeEl.value === 'CPT-AX') {
+    nonTargetBtn.style.display = '';
+    nonTargetBtn.textContent = `Non-target (${normKeyName(nonTargetKeyEl.value)})`;
+  } else {
+    nonTargetBtn.style.display = 'none';
+  }
+}
+
+// normalize key name (user input)
+function normKeyName(name){
+  if(!name) return 'Space';
+  return name.trim();
+}
+function keyMatchesEvent(e, name){
+  const n=name.toLowerCase();
+  if(n==='space') return e.code==='Space' || e.key===' ' || e.key==='Spacebar';
+  if(n==='enter') return e.code==='Enter' || e.key==='Enter';
+  if(n.length===1) return e.key.toLowerCase()===n;
+  // fallback: check code includes
+  return e.code.toLowerCase().includes(n);
+}
+
+// generate trials
+function getDistractorLetters(){
+  let set = ['B']; // default
+  if(extraLettersToggle.checked){
+    document.querySelectorAll('.distractorLetter').forEach(ch => { if(ch.checked && !set.includes(ch.value)) set.push(ch.value); });
+  }
+  // ensure unique and alphabetical
+  return Array.from(new Set(set)).slice(0,6);
+}
+function generateTrials(){
+  const N = Math.max(1, parseInt(numTrialsEl.value,10) || 30);
+  const type = testTypeEl.value;
+  const goProb = Math.max(0, Math.min(1, parseFloat(goProbEl.value || 0.4)));
+  const axRate = Math.max(0, Math.min(0.4, parseFloat(axRateEl.value || 0.2)));
+  const distractors = getDistractorLetters();
+  // base letters pool excluding A and X to avoid accidental placing
+  const pool = distractors.concat(['Y','Z','M','T']).slice(0,8);
+
+  // create blank array
+  let arr = new Array(N).fill(null).map(()=>({ letter: pool[Math.floor(Math.random()*pool.length)], expected:false, color:null }));
+
+  if(testTypeEl.value === 'CPT'){
+    for(let i=0;i<N;i++){
+      if(Math.random() < goProb){
+        arr[i].letter = 'X'; arr[i].expected = true;
+      }
+    }
+  } else { // CPT-AX
+    // place AX pairs
+    let pairs = Math.floor(N * axRate);
+    pairs = Math.min(pairs, Math.floor(N/2));
+    const taken = new Set();
+    let placed=0, attempts=0;
+    while(placed < pairs && attempts < pairs*8 + 200){
+      attempts++;
+      const pos = Math.floor(Math.random()*(N-1));
+      if(taken.has(pos) || taken.has(pos+1)) continue;
+      // place A at pos and X at pos+1
+      arr[pos].letter = 'A'; arr[pos].expected = false;
+      arr[pos+1].letter = 'X'; // expected only if prev is A and color rule satisfied (we'll mark expected later)
+      taken.add(pos); taken.add(pos+1);
+      placed++;
+    }
+    // mark expected true only when X follows A
+    for(let i=0;i<N;i++){
+      if(arr[i].letter === 'X' && i>0 && arr[i-1].letter === 'A') arr[i].expected = true;
+      else arr[i].expected = false;
+    }
+  }
+
+  // if colorMode, assign colors randomly between colorA/colorB (we'll use 'A' and 'B' labels)
+  if(colorModeEl.checked){
+    const cA = colorAEl.value, cB = colorBEl.value;
+    for(let i=0;i<arr.length;i++){
+      // random color
+      arr[i].color = Math.random() < 0.5 ? 'A' : 'B';
+    }
+    // if requireAColor is checked, only mark expected true if preceding A had color A. For CPT-AX we need to re-evaluate
+    if(testTypeEl.value === 'CPT-AX' && requireAColorEl.checked){
+      for(let i=0;i<arr.length;i++){
+        if(arr[i].letter === 'X' && i>0 && arr[i-1].letter === 'A' && arr[i-1].color === 'A'){
+          arr[i].expected = true;
+        } else {
+          // if previously marked expected but precursor not in color A, disable
+          if(arr[i].letter === 'X') arr[i].expected = false;
+        }
+      }
+    }
+  } else {
+    // no colors, keep color null
+    arr.forEach(a => a.color = null);
+  }
+
+  // attach index
+  return arr.map((t,i) => ({ idx:i+1, letter:t.letter, expected:!!t.expected, color:t.color }));
+}
+
+// start test with countdown overlay centered
+let countdownInterval = null;
+function startTest(){
+  const sid = subjectIdEl.value.trim();
+  if(!sid){ showAlert('Subject ID is required'); return; }
+  if(!subjectAgeEl.value){ showAlert('Age is required'); return; }
+  if(!subjectSexEl.value){ showAlert('Sex is required'); return; }
+
+  trials = generateTrials();
+  currentIndex = -1; results = []; rtList=[]; omissions=0; commissions=0; correctResponses=0; correctInhibitions=0;
+  stimDiv.textContent = '';
+  startBtn.disabled = true;
+
+  // show centered countdown overlay (3..1)
+  let c = 3; countNum.textContent = c; countOverlay.style.display = 'flex';
+  countdownInterval = setInterval(()=> {
+    c--;
+    if(c<=0){
+      clearInterval(countdownInterval); countOverlay.style.display = 'none'; statusEl.textContent='Running...'; nextTrial();
+    } else {
+      countNum.textContent = c;
+    }
+  },1000);
+}
+
+// proceed to next trial
+function nextTrial(){
+  currentIndex++;
+  clearTimeout(stimTimeout); clearTimeout(isiTimeout);
+  if(currentIndex >= trials.length){
+    finishTest(); return;
+  }
+  const tr = trials[currentIndex];
+  // render letter and if color mode, color it
+  stimDiv.textContent = tr.letter;
+  if(tr.color === 'A') stimDiv.style.color = colorAEl.value;
+  else if(tr.color === 'B') stimDiv.style.color = colorBEl.value;
+  else stimDiv.style.color = ''; // default
+  statusEl.textContent = `Trial ${currentIndex+1} / ${trials.length}`;
+  awaiting = true;
+  stimShownAt = performance.now();
+
+  // stimulus timeout: if no response -> omission/correct inhibition
+  stimTimeout = setTimeout(()=>{
+    if(!awaiting) return;
+    awaiting = false;
+    if(tr.expected){
+      omissions++; results.push({ trial:tr.idx, letter:tr.letter, expected:true, keyPressed:'', RT:'', correct:0, note:'Omission' });
+      beep(380,200);
+      // visual
+      stimDiv.textContent = 'Missed';
+      stimDiv.style.color = '#ef4444';
+      setTimeout(()=> stimDiv.textContent = '', 200);
+    } else {
+      // correct inhibition (non-target not responded)
+      correctInhibitions++;
+      results.push({ trial:tr.idx, letter:tr.letter, expected:false, keyPressed:'', RT:'', correct:1, note:'Correct Inhibition' });
+      // visual
+      stimDiv.style.boxShadow = '0 8px 30px rgba(0,0,0,0.08)';
+      setTimeout(()=> stimDiv.style.boxShadow = '', 120);
+      stimDiv.textContent = '';
+    }
+    // schedule next after ISI
+    isiTimeout = setTimeout(()=> { stimDiv.textContent=''; nextTrial(); }, parseInt(isiEl.value,10));
+  }, parseInt(stimTimeEl.value,10));
+}
+
+// handle keyboard responses
+function handleKeyDown(e){
+  if(popup.style.display === 'flex') return;
+  if(countOverlay.style.display === 'flex') return;
+  if(!awaiting) return;
+  const targetKeyName = normKeyName(targetKeyEl.value || 'Space');
+  const nonTargetKeyName = normKeyName(nonTargetKeyEl.value || 'N');
+  if(keyMatchesEvent(e, targetKeyName)) { processResponse('target'); e.preventDefault(); }
+  else if(keyMatchesEvent(e, nonTargetKeyName)) { processResponse('nontarget'); e.preventDefault(); }
+}
+
+// simulate key from on-screen button
+function simulateKey(which){ if(!awaiting) return; processResponse(which); }
+
+function updateConfigVisibility() {
+  const type = testTypeEl.value;
+  if (type === 'CPT') {
+    // hide non-target config and color options
+    nonTargetKeyEl.style.display = 'none';
+    $('requireAColor').parentElement.style.display = 'none';
+    $('colorMode').closest('div').style.display = 'none';
+    lettersGrid.style.display = 'none';
+    document.querySelectorAll('.input_hide').forEach(el => el.style.display = 'none');
+
+  } else {
+    // AX-CPT → show everything
+    nonTargetKeyEl.style.display = '';
+    $('requireAColor').parentElement.style.display = '';
+    $('colorMode').closest('div').style.display = 'flex';
+    if (extraLettersToggle.checked) lettersGrid.style.display = 'grid';
+    document.querySelectorAll('.input_hide').forEach(el => el.style.display = 'flex');
+  }
+  updateKeyLabels();
+}
+
+// process a response (target or non-target pressed)
+function processResponse(which){
+  if(!awaiting) return;
+  awaiting = false;
+  clearTimeout(stimTimeout);
+  const tr = trials[currentIndex];
+  const rt = Math.round(performance.now() - stimShownAt);
+  let record = { trial: tr.idx, letter: tr.letter, expected:tr.expected, keyPressed: which, RT: rt, correct:0, note:'' };
+
+  if(tr.expected){
+    // correct response should be target press
+    if(which === 'target'){ record.correct = 1; record.note='Correct Target'; correctResponses++; rtList.push(rt); }
+    else { // pressed non-target when target expected
+      record.correct = 0; record.note='Wrong key on Target (Commission)'; commissions++; if(colorModeEl.checked) beep(380,160); }
+  } else {
+    // non-target trial -> correct response should be non-target press
+    if(which === 'nontarget'){ record.correct = 1; record.note='Correct Non-target'; correctInhibitions++; }
+    else { record.correct = 0; record.note='Commission on Non-target'; commissions++; if(colorModeEl.checked) beep(380,160); }
+  }
+  results.push(record);
+  // visual feedback
+  stimDiv.style.boxShadow = record.correct ? '0 8px 40px rgba(16,185,129,0.18)' : '0 8px 40px rgba(239,68,68,0.18)';
+  setTimeout(()=> stimDiv.style.boxShadow = '', 160);
+  // clear letter (so it doesn't overlap)
+  stimDiv.textContent = '';
+  // next after ISI
+  isiTimeout = setTimeout(()=> nextTrial(), parseInt(isiEl.value,10));
+}
+
+// finish test
+function finishTest(){
+  startBtn.disabled = false;
+  statusEl.textContent = 'Finished';
+  stimDiv.textContent = '—';
+  renderSummary();
+  popup.style.display = 'flex';
+  renderCharts();
+}
+
+// render summary block
+function renderSummary(){
+  const meanRT = rtList.length ? Math.round(rtList.reduce((a,b)=>a+b,0)/rtList.length) : '-';
+  resultsSummary.style.display = 'none'; //hide summary initially block
+  resultsSummary.innerHTML = `
+    <div style="background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:12px;border-radius:10px">
+      <strong>Summary</strong>
+      <div class="muted">Trials: ${results.length}</div>
+      <div>Mean RT (correct targets): <strong>${meanRT} ms</strong></div>
+      <div>Correct Targets: <strong>${correctResponses}</strong> | Omissions: <strong>${omissions}</strong> | Commissions: <strong>${commissions}</strong> | Correct Non-targets: <strong>${correctInhibitions}</strong></div>
+    </div>
+  `;
+}
+
+// render charts
+function renderCharts(disableAnim=false){
+  // RT chart: chronological correct target RTs
+  const rtRecords = results.filter(r => r.RT && r.RT !== '' && r.note && r.note.startsWith('Correct Target'));
+  const labels = rtRecords.map(r => `T${r.trial}`);
+  const data = rtRecords.map(r => r.RT);
+  if(rtChart) rtChart.destroy();
+  rtChart = new Chart(rtCanvas.getContext('2d'), {
+    type:'line',
+    data:{ labels, datasets:[{ label:'RT (ms)', data, tension:0.2, fill:false }]},
+    options:{ animation: disableAnim?false:undefined, plugins:{ title:{ display:true, text:'Reaction Times (Correct Targets)' },legend:{ display:false } }, scales:{x:{ title:{ display:true, text:'Trial' }}, y:{ beginAtZero:true, title:{ display:true, text:'RT (ms)' }}} }
+  });
+
+  // perf chart
+  if(perfChart) perfChart.destroy();
+  const perfData = [correctResponses, omissions, correctInhibitions, commissions];
+  perfChart = new Chart(perfCanvas.getContext('2d'), {
+    type:'bar',
+    data:{ labels:['Correct Targets','Omissions','Correct Non-targets','Commissions'], datasets:[{ label:'Count', data:perfData,backgroundColor:['#16a34a','#f97316','#3b82f6','#ef4444'] }] },
+    options:{ animation: disableAnim?false:undefined, plugins:{title:{ display:true, text:'Performance Summary' }, legend:{ display:false } }, scales:{ x:{ title:{ display:true,text:'Category' },ticks:{font:{size:8}} }, y:{ beginAtZero:true,title:{ display:true,text:'Count' } } } }
+  });
+}
+
+// CSV export
+function downloadCSV(){
+  if(results.length===0){ showAlert('No results to export'); return; }
+  const sid = subjectIdEl.value.trim() || 'subject';
+  const meta = [
+    `Subject ID,${sid}`,
+    `Age,${subjectAgeEl.value||''}`,
+    `Sex,${subjectSexEl.value||''}`,
+    `Test Type,${testTypeEl.value}`,
+    `Num Trials,${numTrialsEl.value}`,
+    `Stimulus Time,${stimTimeEl.value}`,
+    `ISI,${isiEl.value}`,
+    `Target Prob (CPT),${goProbEl.value}`,
+    `AX Rate (CPT-AX),${axRateEl.value}`,
+    `Color Mode,${colorModeEl.checked}`,
+    `ColorA,${colorAEl.value}`,
+    `ColorB,${colorBEl.value}`,
+    `RequireAColor,${requireAColorEl.checked}`,
+    `TargetKey,${targetKeyEl.value}`,
+    `NonTargetKey,${nonTargetKeyEl.value}`
+  ].join('\n');
+  const hdr = ['trial','letter','color','expected','keyPressed','correct','RT','note'];
+  const rows = [meta, '', hdr.join(',')];
+  for(const r of results){
+    const vals = [
+      r.trial, r.letter, (r.color||''), r.expected?1:0, r.keyPressed, r.correct?1:0, r.RT||'', r.note||''
+    ].map(v => { const s = String(v).replace(/"/g,'""'); return (s.includes(',') ? `"${s}"` : s); }).join(',');
+    rows.push(vals);
+  }
+  const blob = new Blob([rows.join('\n')], { type:'text/csv' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = `${sid}_AXCPT_${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.csv`;
+  document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(a.href);
+}
+
+// PDF export
+async function downloadPDF(){
+  if(results.length===0){ showAlert('No results to export'); return; }
+  renderCharts(true);
+  await new Promise(r => setTimeout(r,200));
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF({ unit:'mm', format:'a4', orientation:'portrait' });
+  const pageW = pdf.internal.pageSize.getWidth(), margin=12, colW=(pageW-margin*2-8)/2;
+  let y1=36, y2=36;
+  pdf.setFontSize(18); pdf.setFont('helvetica','bold'); pdf.text('AX-CPT Report', pageW/2, 18, { align:'center' });
+  pdf.setFontSize(9); pdf.setFont('helvetica','normal'); pdf.text(`Generated: ${new Date().toLocaleString()}`, pageW/2, 24, { align:'center' });
+  pdf.line(margin,28, pageW - margin, 28);
+  // left: config
+  pdf.setFontSize(12); pdf.setFont('helvetica','bold'); pdf.text('Configuration', margin, y1); y1+=6;
+  pdf.setFontSize(10); pdf.setFont('helvetica','normal');
+  const cfg = {
+    'Subject ID': subjectIdEl.value || '',
+    'Age': subjectAgeEl.value || '',
+    'Sex': subjectSexEl.value || '',
+    'Test Type': testTypeEl.value,
+    'Num Trials': numTrialsEl.value,
+    'Stimulus Time (ms)': stimTimeEl.value,
+    'ISI (ms)': isiEl.value,
+    'Target Prob (CPT)': goProbEl.value,
+    'AX Rate (CPT-AX)': axRateEl.value,
+    'Color Mode': colorModeEl.checked,
+    'Color A': colorAEl.value,
+    'Color B': colorBEl.value,
+    'Require A Color': requireAColorEl.checked,
+    'Target Key': targetKeyEl.value,
+    'Non-target Key': nonTargetKeyEl.value
+  };
+  for(const [k,v] of Object.entries(cfg)){ pdf.setFont('helvetica','bold'); pdf.text(k+':', margin, y1); pdf.setFont('helvetica','normal'); pdf.text(String(v), margin + 58, y1); y1 += 6; }
+  // summary
+  y1 += 4; pdf.setFont('helvetica','bold'); pdf.text('Performance Summary', margin, y1); y1+=6;
+  const meanRT = rtList.length? Math.round(rtList.reduce((a,b)=>a+b,0)/rtList.length) : 'N/A';
+  const summ = {'Mean RT (ms)': meanRT, 'Correct Targets': correctResponses, 'Omissions': omissions, 'Correct Non-targets': correctInhibitions, 'Commissions': commissions};
+  for(const [k,v] of Object.entries(summ)){ pdf.setFont('helvetica','bold'); pdf.text(k+':', margin, y1); pdf.setFont('helvetica','normal'); pdf.text(String(v), margin + 58, y1); y1 += 6; }
+
+  // right column: charts
+  const rtImg = rtCanvas.toDataURL('image/png'); const perfImg = perfCanvas.toDataURL('image/png');
+  const imgW = colW; const imgH = imgW * 0.55;
+  pdf.setFont('helvetica','bold'); pdf.text('Reaction Time Chart', margin + colW + 8, y2); y2 += 6;
+  pdf.addImage(rtImg, 'PNG', margin + colW + 8, y2, imgW, imgH); y2 += imgH + 8;
+  pdf.setFont('helvetica','bold'); pdf.text('Performance Chart', margin + colW + 8, y2); y2 += 6;
+  pdf.addImage(perfImg, 'PNG', margin + colW + 8, y2, imgW, imgH);
+
+  // footer
+  const pc = pdf.internal.getNumberOfPages();
+  for(let i=1;i<=pc;i++){ pdf.setPage(i); pdf.setFontSize(9); pdf.setTextColor(150); pdf.text(`Page ${i} of ${pc} | AX-CPT Report`, pageW/2, pdf.internal.pageSize.getHeight() - 8, { align:'center' }); }
+
+  const fname = `${(subjectIdEl.value||'subject')}_AXCPT_${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.pdf`;
+  pdf.save(fname);
+}
+
+// reset all
+function resetAll(){
+  clearTimeout(stimTimeout); clearTimeout(isiTimeout); clearInterval(countdownInterval);
+  trials=[]; results=[]; currentIndex=-1; awaiting=false;
+  stimDiv.textContent='—'; stimDiv.style.color=''; statusEl.textContent='Ready. Configure and press Start Test.'; resultsSummary.style.display='none';
+  popup.style.display='none';
+  startBtn.disabled = false;
+}
+
+// save defaults
+function saveDefaultsFn(){
+  ['numTrials','stimTime','isi','goProb','axRate','targetKey','nonTargetKey'].forEach(k => { if($(k)) localStorage[k] = $(k).value; });
+  showAlert('Defaults saved');
+}
+</script>
+</body>
+</html>
