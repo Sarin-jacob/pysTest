@@ -1,0 +1,13 @@
+services:
+  pysTest:
+    build: .
+    container_name: pysTest
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      # - APP_BASE_URL=/my-data-app 
+      # - APP_UPLOAD_FOLDER=/app/uploads 
+      # - WEB_CONCURRENCY=4 # Example: Number of Gunicorn workers # The right side is the path inside the container (must match APP_UPLOAD_FOLDER)
+    volumes:
+      - ./data:/app/uploads
