@@ -22,7 +22,6 @@ let trialActive = false;
 let rtChart, perfChart;
 const testName = "GoNoGo";
 
-loadServerUrl();
 // Initial setup
 window.addEventListener('load', () => {
     subjectIdEl.value = ''; subjectAgeEl.value = ''; subjectSexEl.value = '';
