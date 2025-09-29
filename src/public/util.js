@@ -137,7 +137,7 @@ async function uploadCsv(blob, fileName) {
   formData.append('csvFile', blob, fileName);
 
   try {
-    const response = await fetch('/api/upload', {
+    const response = await fetch('./api/upload', {
       method: 'POST',
       body: formData,
     });
@@ -161,6 +161,6 @@ async function uploadCsv(blob, fileName) {
       console.error(`Error uploading ${fileName}:`, error);
     }
     
-    throw error; // Still throw the error so your other code can handle it
+    // throw error; // Still throw the error so your other code can handle it
   }
 }

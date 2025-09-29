@@ -1,13 +1,20 @@
 services:
   pysTest:
     build: .
+    image: psytest:latest
     container_name: pysTest
     restart: unless-stopped
+    user: "65532:65532"
     ports:
       - "8080:8080"
     environment:
-      # - APP_BASE_URL=/my-data-app 
-      # - APP_UPLOAD_FOLDER=/app/uploads 
+       - APP_BASE_URL=/psytest
+      # - APP_UPLOAD_FOLDER=/app/uploads
       # - WEB_CONCURRENCY=4 # Example: Number of Gunicorn workers # The right side is the path inside the container (must match APP_UPLOAD_FOLDER)
+      # - APP_DOMAIN=example.com
+      # - APP_MAX_FILE_SIZE_MB=8 # Example: Set max file size to 8 MB
     volumes:
-      - ./data:/app/uploads
+      - psytest_data:/app/uploads
+
+volumes:
+  psytest_data:
