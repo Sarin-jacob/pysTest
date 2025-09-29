@@ -15,6 +15,7 @@ services:
       # - APP_MAX_FILE_SIZE_MB=8 # Example: Set max file size to 8 MB
     volumes:
       - psytest_data:/app/uploads
+    restart: unless-stopped
 
 volumes:
   psytest_data:
