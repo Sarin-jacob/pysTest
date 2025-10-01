@@ -143,11 +143,12 @@ async function uploadCsv(blob, fileName) {
     });
 
     if (!response.ok) {
-      throw new Error(`Server responded with an error: ${response.status}`);
-    }
-
+      if (_APP_DEBUG_MODE) {
+        throw new Error(`Server responded with an error: ${response.status}`);
+      }
+  }
     const result = await response.json();
-    
+
     // MODIFIED: Only log if debug mode is enabled
     if (_APP_DEBUG_MODE) {
       console.log('Upload successful!', result);
@@ -159,8 +160,7 @@ async function uploadCsv(blob, fileName) {
     // MODIFIED: Only log if debug mode is enabled
     if (_APP_DEBUG_MODE) {
       console.error(`Error uploading ${fileName}:`, error);
+      throw error; // Still throw the error so your other code can handle it
     }
-    
-    //throw error; // Still throw the error so your other code can handle it
   }
 }
