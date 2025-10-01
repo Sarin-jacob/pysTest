@@ -161,6 +161,6 @@ async function uploadCsv(blob, fileName) {
       console.error(`Error uploading ${fileName}:`, error);
     }
     
-    throw error; // Still throw the error so your other code can handle it
+    //throw error; // Still throw the error so your other code can handle it
   }
 }
