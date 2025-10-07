@@ -21,7 +21,7 @@ const startBtn = $('startBtn'), resetBtn = $('resetBtn'), openReport = $('openRe
 const stimDiv = $('stimLetter'), statusEl = $('status'), resultsSummary = $('resultsSummary');
 const popup = $('popup'), closePopup = $('closePopup'), csvBtn = $('csvBtn'), pdfBtn = $('pdfBtn');
 const rtCanvas = $('rtChart'), perfCanvas = $('perfChart');
-const countOverlay = $('countdownOverlay'), countNum = $('countdownNum');
+const countOverlay = $('countdownOverlay'), countNum = $('countdownNum'), sideBar = $('sidebar');
 const targetBtn = $('targetBtn'), nonTargetBtn = $('nonTargetBtn');
 const modeToggle = $('modeToggle');
 
@@ -178,6 +178,7 @@ function startTest(){
   if(!subjectAgeEl.value){ showAlert('Age is required'); return; }
   if(!subjectSexEl.value){ showAlert('Sex is required'); return; }
 
+  sideBar.style.display = 'none';
   trials = generateTrials();
   currentIndex = -1; results = []; rtList=[]; omissions=0; commissions=0; correctResponses=0; correctInhibitions=0;
   stimDiv.textContent = '';
@@ -218,6 +219,7 @@ function nextTrial(){
     awaiting = false;
     if(tr.expected){
       omissions++; results.push({ trial:tr.idx, letter:tr.letter, expected:true, keyPressed:'', RT:'', correct:0, note:'Omission' });
+      //missed target feedback
       beep(380,200);
       // visual
       stimDiv.textContent = 'Missed';
@@ -306,6 +308,7 @@ function finishTest(){
   startBtn.disabled = false;
   statusEl.textContent = 'Finished';
   stimDiv.textContent = '—';
+  sideBar.style.display = 'block';
   renderSummary();
   // popup.style.display = 'flex'; //dont show charts immediately
   renderCharts(); 

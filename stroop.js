@@ -79,6 +79,7 @@ $('numColors').value =  '3';
   const countOverlay = $('countdownOverlay');
   const countNum = $('countdownNum');
   const  openReport = $('openReport');
+  const sideBar = $('sidebar');
 
   // state
   let bindings = {}; // colorName -> key (lowercase)
@@ -234,9 +235,9 @@ $('numColors').value =  '3';
           correct: 0,
           RT: ''
         });
-        // show missed briefly
-        stimWordEl.textContent = 'Missed';
-        stimWordEl.style.color = '#ef4444';
+        // show missed briefly feedback
+        // stimWordEl.textContent = 'Missed';
+        // stimWordEl.style.color = '#ef4444';
         setTimeout(()=>{ stimWordEl.textContent=''; }, 220);
         isiTimeout = setTimeout(()=> nextTrial(), parseInt(isiEl.value,10));
       }
@@ -288,10 +289,10 @@ $('numColors').value =  '3';
 
     // feedback effects
     if(pressedIsCorrect){
-      stimWordEl.style.boxShadow = '0 8px 40px rgba(16,185,129,0.18)';
+      // stimWordEl.style.boxShadow = '0 8px 40px rgba(16,185,129,0.18)';
     } else {
-      stimWordEl.style.boxShadow = '0 8px 40px rgba(239,68,68,0.18)';
-      beep(400,160);
+      // stimWordEl.style.boxShadow = '0 8px 40px rgba(239,68,68,0.18)';
+      // beep(400,160);
     }
     setTimeout(()=> stimWordEl.style.boxShadow = '', 160);
 
@@ -330,7 +331,7 @@ let countdownInterval = null;
       openBindings();
       return;
     }
-
+    sideBar.style.display = 'none';
     // reset
     results = []; currentIndex = -1;
     trials = generateTrials();
@@ -351,6 +352,7 @@ let countdownInterval = null;
     startBtn.disabled = false;
     statusEl.textContent = 'Finished';
     stimWordEl.textContent = '—';
+    sideBar.style.display = 'block';
     // show summary
     showSummary();
     // enable popup/report button

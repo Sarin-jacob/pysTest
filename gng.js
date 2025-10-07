@@ -6,7 +6,7 @@ const goProbEl = $('goProb'), textureToggleEl = $('textureToggle');
 const goColorEl = $('goColor'), nogoColorEl = $('nogoColor');
 const startBtn = $('startBtn'), showReportBtn = $('showReportBtn');
 const stimulusDiv = $('stimulus'), statusEl = $('status'), resultsSummary = $('resultsSummary');
-const popup = $('popup'), csvBtn = $('csvBtn'), pdfBtn = $('pdfBtn');
+const popup = $('popup'), csvBtn = $('csvBtn'), pdfBtn = $('pdfBtn'), sideBar = $('sidebar');
 const rtCanvas = $('rtChart'), perfCanvas = $('perfChart');
 const instructionsDiv = $('instructions'), modeToggle = $('modeToggle');
 const countdownOverlay = $('countdownOverlay'), countdownNum = $('countdownNum');
@@ -69,6 +69,7 @@ function startTest() {
   results = { reactionTimes: [], omissions: 0, correctInhibitions: 0, commissions: 0, correctResponses: 0 };
   trialLogs = []; 
   resultsSummary.style.display = 'none';
+  sideBar.style.display = 'none';
   startBtn.disabled = true;
 
   let count = 3;
@@ -105,8 +106,9 @@ function nextTrial() {
 
     if (currentStimulus === "GO" && !responseMade) {
       results.omissions++;
-      beep(400, 200);
-      stimulusDiv.innerHTML = `<span style="color:red;font-size:48px;">❌ Missed!</span>`;
+      //feedback
+      // beep(400, 200);
+      // stimulusDiv.innerHTML = `<span style="color:red;font-size:48px;">❌ Missed!</span>`;
       trialLogs.push({ trial, stimulus: "GO", responded: false, rt: "", outcome: "Omission" });
       setTimeout(() => { stimulusDiv.textContent = ""; setTimeout(nextTrial, config.ISI); }, 300);
     } else if (currentStimulus === "NOGO" && !responseMade) {
@@ -145,8 +147,9 @@ function handleKeydown(e) {
     setTimeout(nextTrial, config.ISI);
   } else if (currentStimulus === "NOGO") {
     results.commissions++;
-    beep(400, 200);
-    stimulusDiv.innerHTML = `<span style="color:red;font-size:48px;">❌ Error!</span>`;
+    // feedback
+    // beep(400, 200);
+    // stimulusDiv.innerHTML = `<span style="color:red;font-size:48px;">❌ Error!</span>`;
     trialLogs.push({ trial, stimulus: "NOGO", responded: true, rt: rt, outcome: "Commission" });
     setTimeout(() => { stimulusDiv.textContent = ""; setTimeout(nextTrial, config.ISI); }, 300);
   }
@@ -156,6 +159,7 @@ function endTest() {
   stimulusDiv.textContent = "—";
   startBtn.disabled = false;
   statusEl.textContent = "Finished";
+  sideBar.style.display = 'block';
   renderSummary();
 //   showReport(); //hide dont open unless clicked 
 generateCSV(); //pre-generate CSV for download/upload
