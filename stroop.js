@@ -354,11 +354,11 @@ let countdownInterval = null;
     // show summary
     showSummary();
     // enable popup/report button
-    // popup.style.display = 'flex'; dont show automatically
+    // popup.style.display = 'flex'; //dont show automatically
     popup.style.alignItems = 'center';
     popup.style.justifyContent = 'center';
     // Render charts
-    // renderCharts(); //dont show automatically
+    renderCharts(); 
     generateCSV();
   }
 

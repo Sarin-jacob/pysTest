@@ -307,8 +307,8 @@ function finishTest(){
   statusEl.textContent = 'Finished';
   stimDiv.textContent = '—';
   renderSummary();
-  popup.style.display = 'flex';
-  // renderCharts(); //dont show charts immediately
+  // popup.style.display = 'flex'; //dont show charts immediately
+  renderCharts(); 
   generateCSV();
 }
 
@@ -389,6 +389,7 @@ function downloadCSV(){
 
 // PDF export
 async function downloadPDF(){
+  const sid = subjectIdEl.value.trim() || 'subject';
   if(results.length===0){ showAlert('No results to export'); return; }
   renderCharts(true);
   await new Promise(r => setTimeout(r,200));
