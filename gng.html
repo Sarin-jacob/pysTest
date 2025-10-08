@@ -32,6 +32,14 @@
     <details class="advanced-config">
       <summary>Advanced Config</summary>
       <div style="padding: 8px;">
+          <div style="display:inline-flex;width: 100%;justify-content: space-between;align-items: center;">
+          <label>Trial Run</label>
+          <label class="switch">
+              <input id="trialRunCheckbox" type="checkbox" checked>
+              <span class="slider"></span>
+          </label>
+          </div>
+        <hr style="margin:10px 0;border:none;border-top:1px solid var(--input-border)">
         <label>Stimulus Time (ms)</label>
         <input id="stimTime" type="number" value="1000">
 
@@ -127,9 +135,9 @@
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://unpkg.com/jspdf@latest/dist/jspdf.umd.min.js"></script>
 <script src="util.js"></script>
 <script src="gng.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://unpkg.com/jspdf@latest/dist/jspdf.umd.min.js"></script>
 </body>
 </html>

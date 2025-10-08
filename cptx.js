@@ -11,13 +11,16 @@ const popup = $('popup'), closePopup = $('closePopup'), csvBtn = $('csvBtn'), pd
 const rtCanvas = $('rtChart'), perfCanvas = $('perfChart');
 const countOverlay = $('countdownOverlay'), countNum = $('countdownNum'), sideBar = $('sidebar');
 const targetBtn = $('targetBtn');
-const modeToggle = $('modeToggle');
+const modeToggle = $('modeToggle'), trialRunCheckbox = $('trialRunCheckbox');
 
 let trials = [], currentIndex = -1, awaiting = false, stimShownAt = 0;
 let stimTimeout = null, isiTimeout = null;
 let results = [], rtList = [], omissions=0, commissions=0, correctResponses=0, correctInhibitions=0;
 let rtChart=null, perfChart=null;
 let cachedCsvBlob = null;
+let isTrialMode = false;
+let hasTrialRunCompleted = false;
+const TRIAL_RUN_COUNT = 5;
 
 updateKeyLabels();
 
@@ -38,11 +41,6 @@ window.addEventListener('load', ()=>{
   targetKeyEl.addEventListener('input', updateKeyLabels);
 });
 
-function hideInstructions(){
-  $('instructions').style.display = 'none';
-  $('subjectId').focus();
-}
-
 function updateKeyLabels() {
   targetBtn.textContent = `Target (${normKeyName(targetKeyEl.value)})`;
 }
@@ -60,8 +58,8 @@ function keyMatchesEvent(e, name){
   return e.code.toLowerCase().includes(n);
 }
 
-function generateTrials(){
-  const N = Math.max(1, parseInt(numTrialsEl.value,10) || 30);
+function generateTrials(isPractice = false){
+  const N = isPractice ? TRIAL_RUN_COUNT : (Math.max(1, parseInt(numTrialsEl.value,10) || 30));
   const goProb = Math.max(0, Math.min(1, parseFloat(goProbEl.value || 0.4)));
   const pool = ['B','C','D','F','G','H','J','K','L'];
   let arr = [];
@@ -70,6 +68,12 @@ function generateTrials(){
       arr.push({ letter: 'X', expected: true });
     } else {
       arr.push({ letter: pool[Math.floor(Math.random()*pool.length)], expected: false });
+    }
+  }
+  if (isPractice) {
+    const hasTarget = arr.some(t => t.expected);
+    if (!hasTarget && N > 2) {
+      arr[2] = { letter: 'X', expected: true }; // Force a target on the 3rd trial
     }
   }
   return arr.map((t,i) => ({ idx:i+1, letter:t.letter, expected:!!t.expected }));
@@ -81,7 +85,35 @@ function startTest(){
   if(!sid){ showAlert('Subject ID is required'); return; }
   if(!subjectAgeEl.value){ showAlert('Age is required'); return; }
   if(!subjectSexEl.value){ showAlert('Sex is required'); return; }
+  const wantsTrialRun = trialRunCheckbox.checked;
+  if (wantsTrialRun && !hasTrialRunCompleted) {
+    runPracticeSession();
+  } else {
+    runMainSession();
+  }
+}
 
+async function runPracticeSession() {
+  isTrialMode = true;
+  hasTrialRunCompleted = true; // Prevents it from running again
+  sideBar.style.display = 'none';
+  stimDiv.textContent = '';
+  startBtn.disabled = true;
+
+  // Show "TRIAL" message
+  statusEl.textContent = 'Preparing trial run...';
+  stimDiv.style.fontSize = '120px';
+  stimDiv.textContent = 'TRIAL';
+  await new Promise(r => setTimeout(r, 2000));
+  stimDiv.style.fontSize = '';
+
+  trials = generateTrials(true);
+  currentIndex = -1;
+  nextTrial();
+}
+
+function runMainSession() {
+  isTrialMode = false;
   sideBar.style.display = 'none';
   trials = generateTrials();
   currentIndex = -1; results = []; rtList=[]; omissions=0; commissions=0; correctResponses=0; correctInhibitions=0;
@@ -103,7 +135,18 @@ function nextTrial(){
   currentIndex++;
   clearTimeout(stimTimeout); clearTimeout(isiTimeout);
   if(currentIndex >= trials.length){
-    finishTest(); return;
+    if (isTrialMode) {
+      isTrialMode = false;
+    //   runMainSession(); // Start the main test after the trial
+        sideBar.style.display = 'block';
+        stimDiv.textContent = '—';
+        startBtn.disabled = false;
+        statusEl.textContent = 'Trial run completed. press Start Test (Enter) to begin the main session.';
+        startBtn.focus();
+    } else {
+      finishTest();
+    }
+    return;
   }
   const tr = trials[currentIndex];
   stimDiv.textContent = tr.letter;
@@ -116,18 +159,24 @@ function nextTrial(){
     if(!awaiting) return;
     awaiting = false;
     if(tr.expected){
+      if (!isTrialMode) {
       omissions++; results.push({ trial:tr.idx, letter:tr.letter, expected:true, keyPressed:'', RT:'', correct:0, note:'Omission' });
+      }else {
       // feedback for miss
-    //   beep(380,200);
-    //   stimDiv.textContent = 'Missed'; stimDiv.style.color = '#ef4444';
-    //   setTimeout(()=> stimDiv.textContent = '', 200);
+      beep(380,200);
+      stimDiv.textContent = 'Missed'; stimDiv.style.color = '#ef4444';
+      setTimeout(()=> stimDiv.textContent = '', 200);
+      }
         stimDiv.textContent = '';
     } else {
+        if (!isTrialMode) {
       correctInhibitions++;
       results.push({ trial:tr.idx, letter:tr.letter, expected:false, keyPressed:'', RT:'', correct:1, note:'Correct Inhibition' });
+      } else {
         // feedback for correct inhibition
-    //   stimDiv.style.boxShadow = '0 8px 30px rgba(0,0,0,0.08)';
-    //   setTimeout(()=> stimDiv.style.boxShadow = '', 120);
+      stimDiv.style.boxShadow = '0 8px 30px rgba(0,0,0,0.08)';
+      setTimeout(()=> stimDiv.style.boxShadow = '', 120);
+      }
       stimDiv.textContent = '';
     }
     isiTimeout = setTimeout(()=> { stimDiv.textContent=''; nextTrial(); }, parseInt(isiEl.value,10));
@@ -152,16 +201,20 @@ function processResponse(which){
   const tr = trials[currentIndex];
   const rt = Math.round(performance.now() - stimShownAt);
   let record = { trial: tr.idx, letter: tr.letter, expected:tr.expected, keyPressed: 'target', RT: rt, correct:0, note:'' };
-
+  if (isTrialMode) {
+    // feedback effects
+    const isCorrect = tr.expected;
+    stimDiv.style.boxShadow = isCorrect ? '0 8px 40px rgba(16,185,129,0.18)' : '0 8px 40px rgba(239,68,68,0.18)';
+    if (!isCorrect) beep(440, 150);
+    setTimeout(()=> stimDiv.style.boxShadow = '', 160);
+  } else {
   if(tr.expected){
     record.correct = 1; record.note='Correct Target'; correctResponses++; rtList.push(rt);
   } else {
     record.correct = 0; record.note='Commission on Non-target'; commissions++;
   }
   results.push(record);
-    // feedback effects
-//   stimDiv.style.boxShadow = record.correct ? '0 8px 40px rgba(16,185,129,0.18)' : '0 8px 40px rgba(239,68,68,0.18)';
-//   setTimeout(()=> stimDiv.style.boxShadow = '', 160);
+}
   stimDiv.textContent = '';
   isiTimeout = setTimeout(()=> nextTrial(), parseInt(isiEl.value,10));
 }
@@ -268,6 +321,8 @@ function resetAll(){
   stimDiv.textContent='—'; stimDiv.style.color=''; statusEl.textContent='Ready. Configure and press Start Test.'; resultsSummary.style.display='none';
   popup.style.display='none';
   startBtn.disabled = false;
+  isTrialMode = false;
+  hasTrialRunCompleted = false;
 }
 
 function saveDefaultsFn(){

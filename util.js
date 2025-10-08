@@ -22,6 +22,14 @@ function debugy() {
 // Attach the function to the window object
 window.debugy = debugy;
 
+/**
+ * Function to hide the Intruction overlay
+ */
+function hideInstructions() {
+  $("instructions").style.display = "none";
+  $('subjectId').focus();
+}
+
 
 
 /**

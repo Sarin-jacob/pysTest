@@ -65,10 +65,6 @@ targetKeyEl.addEventListener('input', updateKeyLabels);
 nonTargetKeyEl.addEventListener('input', updateKeyLabels);
 });
 
-function hideInstructions(){
-  $('instructions').style.display = 'none';
-  $('subjectId').focus();
-}
 function updateKeyLabels() {
   targetBtn.textContent = `Target (${normKeyName(targetKeyEl.value)})`;
   if (testTypeEl.value === 'CPT-AX') {

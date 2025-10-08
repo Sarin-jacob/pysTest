@@ -8,7 +8,7 @@ const startBtn = $('startBtn'), showReportBtn = $('showReportBtn');
 const stimulusDiv = $('stimulus'), statusEl = $('status'), resultsSummary = $('resultsSummary');
 const popup = $('popup'), csvBtn = $('csvBtn'), pdfBtn = $('pdfBtn'), sideBar = $('sidebar');
 const rtCanvas = $('rtChart'), perfCanvas = $('perfChart');
-const instructionsDiv = $('instructions'), modeToggle = $('modeToggle');
+const instructionsDiv = $('instructions'), modeToggle = $('modeToggle'), trialRunCheckbox = $('trialRunCheckbox');
 const countdownOverlay = $('countdownOverlay'), countdownNum = $('countdownNum');
 
 let trial, config, results, subjectId;
@@ -16,6 +16,9 @@ let currentStimulus = null;
 let stimulusOnset = null;
 let responseMade = false;
 let cachedCsvBlob = null;
+let isTrialMode = false;
+let hasTrialRunCompleted = false;
+const TRIAL_RUN_COUNT = 5;
 let countdownInterval;
 let trialLogs = [];
 let trialActive = false;
@@ -37,10 +40,6 @@ window.addEventListener('load', () => {
     });
 });
 
-function hideInstructions() {
-  instructionsDiv.style.display = "none";
-  subjectIdEl.focus();
-}
 function closePopup() {
   popup.style.display = "none";
 }
@@ -58,21 +57,33 @@ function getConfig() {
   };
 }
 
-function startTest() {
-  subjectId = subjectIdEl.value.trim();
-  if (!subjectId) { showAlert("Subject ID is required!"); return; }
-  if (!subjectAgeEl.value) { showAlert("Age is required!"); return; }
-  if (!subjectSexEl.value) { showAlert("Sex is required!"); return; }
-  
-  config = getConfig();
-  trial = 0;
-  results = { reactionTimes: [], omissions: 0, correctInhibitions: 0, commissions: 0, correctResponses: 0 };
-  trialLogs = []; 
-  resultsSummary.style.display = 'none';
-  sideBar.style.display = 'none';
-  startBtn.disabled = true;
+async function runPracticeSession() {
+    isTrialMode = true;
+    hasTrialRunCompleted = true; // Prevents re-running until page refresh
+    config = getConfig();
+    trial = 0;
+    sideBar.style.display = 'none';
+    startBtn.disabled = true;
+    stimulusDiv.style.fontSize = '120px';
 
-  let count = 3;
+    statusEl.textContent = 'Preparing trial run...';
+    stimulusDiv.textContent = 'TRIAL';
+    await new Promise(r => setTimeout(r, 2000));
+    stimulusDiv.style.fontSize = '120px';
+    
+    nextTrial();
+}
+
+function runMainSession() {
+    isTrialMode = false;
+    config = getConfig();
+    trial = 0;
+    results = { reactionTimes: [], omissions: 0, correctInhibitions: 0, commissions: 0, correctResponses: 0 };
+    trialLogs = []; 
+    resultsSummary.style.display = 'none';
+    sideBar.style.display = 'none';
+    startBtn.disabled = true;
+      let count = 3;
   countdownNum.textContent = count;
   countdownOverlay.style.display = 'flex';
   countdownInterval = setInterval(() => {
@@ -88,8 +99,34 @@ function startTest() {
   }, 1000);
 }
 
+function startTest() {
+  subjectId = subjectIdEl.value.trim();
+  if (!subjectId) { showAlert("Subject ID is required!"); return; }
+  if (!subjectAgeEl.value) { showAlert("Age is required!"); return; }
+  if (!subjectSexEl.value) { showAlert("Sex is required!"); return; }
+  
+  const wantsTrialRun = trialRunCheckbox.checked;
+    if (wantsTrialRun && !hasTrialRunCompleted) {
+    runPracticeSession();
+  } else {
+    runMainSession();
+  }
+
+}
+
 function nextTrial() {
-  if (trial >= config.NUM_TRIALS) { endTest(); return; }
+  if (trial >= config.NUM_TRIALS) { 
+    if (isTrialMode) {
+      isTrialMode = false;
+      statusEl.textContent = 'Trial complete. Press Start (Enter) to begin the main test.';
+      stimulusDiv.textContent = '—';
+      startBtn.disabled = false;
+      startBtn.focus();
+    }else{ 
+    endTest();
+    }
+    return;
+  }
   trial++;
   responseMade = false;
   trialActive = true;
@@ -105,12 +142,15 @@ function nextTrial() {
     stimulusDiv.textContent = "";
 
     if (currentStimulus === "GO" && !responseMade) {
-      results.omissions++;
+      if (isTrialMode) {
       //feedback
-      // beep(400, 200);
-      // stimulusDiv.innerHTML = `<span style="color:red;font-size:48px;">❌ Missed!</span>`;
+      beep(400, 200);
+      stimulusDiv.innerHTML = `<span style="color:red;font-size:48px;">❌ Missed!</span>`;
+      }else{
+      results.omissions++;
       trialLogs.push({ trial, stimulus: "GO", responded: false, rt: "", outcome: "Omission" });
-      setTimeout(() => { stimulusDiv.textContent = ""; setTimeout(nextTrial, config.ISI); }, 300);
+    }
+      setTimeout(() => { stimulusDiv.textContent = ""; setTimeout(nextTrial, config.ISI); }, isTrialMode ? 300 : 0);
     } else if (currentStimulus === "NOGO" && !responseMade) {
       results.correctInhibitions++;
       trialLogs.push({ trial, stimulus: "NOGO", responded: false, rt: "", outcome: "Correct Inhibition" });
@@ -146,12 +186,15 @@ function handleKeydown(e) {
     trialLogs.push({ trial, stimulus: "GO", responded: true, rt: rt, outcome: "Correct" });
     setTimeout(nextTrial, config.ISI);
   } else if (currentStimulus === "NOGO") {
-    results.commissions++;
+    if (isTrialMode) {
     // feedback
-    // beep(400, 200);
-    // stimulusDiv.innerHTML = `<span style="color:red;font-size:48px;">❌ Error!</span>`;
+    beep(400, 200);
+    stimulusDiv.innerHTML = `<span style="color:red;font-size:48px;">❌ Error!</span>`;
+    }else{
+    results.commissions++;
     trialLogs.push({ trial, stimulus: "NOGO", responded: true, rt: rt, outcome: "Commission" });
-    setTimeout(() => { stimulusDiv.textContent = ""; setTimeout(nextTrial, config.ISI); }, 300);
+    }
+    setTimeout(() => { stimulusDiv.textContent = ""; setTimeout(nextTrial, config.ISI); }, isTrialMode ? 300 : 0);
   }
 }
 
