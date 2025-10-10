@@ -7,9 +7,10 @@
   <link rel="stylesheet" href="common.css">
 </head>
 <body class="landing-body">
+  <button id="languageToggle">🌐</button>
   <button id="modeToggle">🌙</button>
 
-  <header class="landing-header">
+  <header class="landing-header translate">
     <h1>Cognitive Test Suite</h1>
     <p>
       Welcome! This suite includes classic psychological tasks designed to measure attention, 
@@ -64,6 +65,17 @@
     });
    // loadServerUrl();
   </script>
+<script src="https://cdn.jsdelivr.net/gh/Sarin-jacob/LanguageToggle/translate-toggle.js"></script>
+<script>
+  initLanguageToggle({
+    sourceLang: 'en',
+    targetLang: 'ml',
+    sourceSymbol: 'A',
+    targetSymbol: 'അ',
+    toggleButton: $("languageToggle"),
+    // partialTranslate: true, // only elements with id 'translate' or class 'translate' will be translated
+  });
+</script>
 </body>
 </html>
 

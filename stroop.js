@@ -259,6 +259,7 @@ $('numColors').value =  '3';
         statusEl.textContent = 'Trial complete. Main test will begin shortly.';
         stimWordEl.textContent = '—';
         startBtn.disabled = false;
+        sideBar.style.display = 'block';
         startBtn.focus();
       } else {
       endTest();

@@ -420,4 +420,18 @@ html {
   background-color: rgb(from var(--accent-color) r g b / 0.6);
 }
 
-
+/* langbutton */
+#languageToggle {
+  font-family: var(--font-family);
+  position: absolute;
+  top: 15px;
+  right: 55px;
+  cursor: pointer;
+  background: var(--button-bg);
+  color: var(--button-text);
+  padding: 4px 4px;
+  border-radius: 10px;
+  font-size: 14px;
+  min-width: 31px;
+  min-height: 31px;
+}

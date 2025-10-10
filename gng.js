@@ -121,6 +121,7 @@ function nextTrial() {
       statusEl.textContent = 'Trial complete. Press Start (Enter) to begin the main test.';
       stimulusDiv.textContent = '—';
       startBtn.disabled = false;
+      sideBar.style.display = 'block';
       startBtn.focus();
     }else{ 
     endTest();
