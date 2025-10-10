@@ -69,7 +69,7 @@ async function runPracticeSession() {
     statusEl.textContent = 'Preparing trial run...';
     stimulusDiv.textContent = 'TRIAL';
     await new Promise(r => setTimeout(r, 2000));
-    stimulusDiv.style.fontSize = '120px';
+    stimulusDiv.style.fontSize = '';
     
     nextTrial();
 }
@@ -115,7 +115,7 @@ function startTest() {
 }
 
 function nextTrial() {
-  if (trial >= config.NUM_TRIALS) { 
+  if (trial >= (isTrialMode ? TRIAL_RUN_COUNT : config.NUM_TRIALS)) {
     if (isTrialMode) {
       isTrialMode = false;
       statusEl.textContent = 'Trial complete. Press Start (Enter) to begin the main test.';
@@ -153,8 +153,10 @@ function nextTrial() {
     }
       setTimeout(() => { stimulusDiv.textContent = ""; setTimeout(nextTrial, config.ISI); }, isTrialMode ? 300 : 0);
     } else if (currentStimulus === "NOGO" && !responseMade) {
+      if (!isTrialMode) {
       results.correctInhibitions++;
       trialLogs.push({ trial, stimulus: "NOGO", responded: false, rt: "", outcome: "Correct Inhibition" });
+      }
       setTimeout(nextTrial, config.ISI);
     }
   }, config.STIMULUS_TIME);
@@ -182,15 +184,17 @@ function handleKeydown(e) {
   stimulusDiv.textContent = "";
 
   if (currentStimulus === "GO") {
+    if(!isTrialMode){ 
     results.reactionTimes.push(rt);
     results.correctResponses++;
     trialLogs.push({ trial, stimulus: "GO", responded: true, rt: rt, outcome: "Correct" });
+    }
     setTimeout(nextTrial, config.ISI);
   } else if (currentStimulus === "NOGO") {
     if (isTrialMode) {
     // feedback
     beep(400, 200);
-    stimulusDiv.innerHTML = `<span style="color:red;font-size:48px;">❌ Error!</span>`;
+    // stimulusDiv.innerHTML = `<span style="color:red;font-size:48px;">❌ Error!</span>`;
     }else{
     results.commissions++;
     trialLogs.push({ trial, stimulus: "NOGO", responded: true, rt: rt, outcome: "Commission" });
