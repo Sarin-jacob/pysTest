@@ -322,6 +322,7 @@ canvas { background: #fff; border-radius: 8px; display: block; margin: 12px auto
   align-items: center;
   min-height: 100vh;
   padding: 40px 20px;
+  height: auto;
 }
 
 .landing-header {
