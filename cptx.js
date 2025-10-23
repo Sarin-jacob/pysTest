@@ -21,6 +21,7 @@ let cachedCsvBlob = null;
 let isTrialMode = false;
 let hasTrialRunCompleted = false;
 const TRIAL_RUN_COUNT = 5;
+const PLUS_TIME=350;
 
 updateKeyLabels();
 switchLang($("testLang").value);
@@ -150,9 +151,16 @@ function nextTrial(){
     }
     return;
   }
+  stimDiv.textContent="+";
+  stimDiv.style.fontWeight="lighter"
+  stimDiv.style.color="red";
+  stimDiv.style.fontSize="128px";
+  setTimeout(()=>{
+  stimDiv.style.fontSize=''
+  stimDiv.style.fontWeight='';
   const tr = trials[currentIndex];
-  stimDiv.textContent = tr.letter;
   stimDiv.style.color = '';
+  stimDiv.textContent = tr.letter;
   statusEl.textContent = `Trial ${currentIndex+1} / ${trials.length}`;
   awaiting = true;
   stimShownAt = performance.now();
@@ -181,8 +189,9 @@ function nextTrial(){
       }
       stimDiv.textContent = '';
     }
-    isiTimeout = setTimeout(()=> { stimDiv.textContent=''; nextTrial(); }, parseInt(isiEl.value,10));
+    isiTimeout = setTimeout(()=> { stimDiv.textContent=''; nextTrial(); }, parseInt(isiEl.value,10)-PLUS_TIME);
   }, parseInt(stimTimeEl.value,10));
+  },PLUS_TIME);
 }
 
 function handleKeyDown(e){
