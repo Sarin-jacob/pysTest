@@ -26,6 +26,7 @@ let trialLogs = [];
 let trialActive = false;
 let rtChart, perfChart;
 const testName = "GoNoGo";
+const PLUS_TIME=350;
 
 // Initial setup
 window.addEventListener('load', () => {
@@ -131,8 +132,10 @@ function nextTrial() {
   responseMade = false;
   trialActive = true;
   statusEl.textContent = `Trial ${trial} / ${config.NUM_TRIALS}`;
-
   currentStimulus = (Math.random() < config.GO_PROBABILITY) ? "GO" : "NOGO";
+  stimulusDiv.innerHTML = `<span style="color:red;font-size:128px;font-weight:lighter">+</span>`;
+  setTimeout(() => {
+    if (!trialActive) return;
   showStimulus(currentStimulus === "GO");
   stimulusOnset = performance.now();
 
@@ -156,9 +159,10 @@ function nextTrial() {
       results.correctInhibitions++;
       trialLogs.push({ trial, stimulus: "NOGO", responded: false, rt: "", outcome: "Correct Inhibition" });
       }
-      setTimeout(nextTrial, config.ISI);
+      setTimeout(nextTrial, config.ISI-PLUS_TIME);
     }
   }, config.STIMULUS_TIME);
+  }, PLUS_TIME);
 }
 
 function showStimulus(isGo) {
