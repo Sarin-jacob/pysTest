@@ -8,8 +8,10 @@ const startBtn = $('startBtn'), showReportBtn = $('showReportBtn');
 const stimulusDiv = $('stimulus'), statusEl = $('status'), resultsSummary = $('resultsSummary');
 const popup = $('popup'), csvBtn = $('csvBtn'), pdfBtn = $('pdfBtn'), sideBar = $('sidebar');
 const rtCanvas = $('rtChart'), perfCanvas = $('perfChart');
-const instructionsDiv = $('instructions'), modeToggle = $('modeToggle'), trialRunCheckbox = $('trialRunCheckbox');
+const instructionsDiv = $('instructions'), trialRunCheckbox = $('trialRunCheckbox');
 const countdownOverlay = $('countdownOverlay'), countdownNum = $('countdownNum');
+
+switchLang($("testLang").value);
 
 let trial, config, results, subjectId;
 let currentStimulus = null;
@@ -34,10 +36,7 @@ window.addEventListener('load', () => {
     pdfBtn.addEventListener("click", downloadPDF);
     document.addEventListener("keydown", handleKeydown);
     $('main').addEventListener("pointerdown", () => { if (trialActive) handleKeydown({ type: "click" }); }, {passive:true});
-    modeToggle.addEventListener("click", () => {
-      document.body.classList.toggle("light");
-      modeToggle.textContent = document.body.classList.contains("light") ? "🌞" : "🌙";
-    });
+    $("testLang").addEventListener("change",switchLang($("testLang").value))
 });
 
 function closePopup() {
@@ -169,10 +168,10 @@ function showStimulus(isGo) {
       ? `<span style="color:${config.GO_COLOR};">✔</span>` 
       : `<span style="color:${config.NOGO_COLOR};">✘</span>`;
   } else {
-    stimulusDiv.classList.add("big");
+    // stimulusDiv.classList.add("big");
     stimulusDiv.innerHTML = isGo 
-      ? `<span style="color:${config.GO_COLOR};">●</span>` 
-      : `<span style="color:${config.NOGO_COLOR};">●</span>`;
+      ? `<span style="color:${config.GO_COLOR};">⬤</span>` 
+      : `<span style="color:${config.NOGO_COLOR};">⬤</span>`;
   }
 }
 

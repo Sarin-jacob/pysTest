@@ -38,6 +38,13 @@
               <span class="slider"></span>
           </label>
           </div>
+              <hr style="margin:10px 0;border:none;border-top:1px solid var(--input-border)" > 
+    <label>Test Language</label>
+    <select id="testLang">
+      <option value="en">English </option>
+      <option value="mr">Marathi</option>
+      <option value="hi">Hindi</option>
+    </select>
         <hr style="margin:10px 0;border:none;border-top:1px solid var(--input-border)">
         <label>STIMULUS_TIME (ms)</label>
         <input id="stimTime" type="number" value="600">
@@ -84,7 +91,7 @@
 
     <div style="margin-top:12px" class="row">
       <button id="startBtn" class="btn primary">Start Test</button>
-      <button id="resetBtn" class="btn">Reset</button>
+      <button id="resetBtn" class="btn" onclick="location.reload()">Reset</button>
     </div>
     <div style="margin-top:12px" class="row">
       <button id="openReport" class="btn">Open Report</button>
@@ -97,7 +104,7 @@
     <div class="stage">
       <div class="statusRow" style="width:100%">
         <div class="infoBox" id="status">Ready. Configure and press Start Test.</div>
-        <button id="modeToggle">🌙</button>
+      <button id="modeToggle" onclick="toggleMode()">🌙</button>
       </div>
       <div id="countdownOverlay"><div id="countdownNum">3</div></div>
       <div class="stimulus cpt" id="stimulus" role="status" aria-live="polite">
@@ -130,8 +137,41 @@
 
 <div id="instructions">
   <div>
-    <h2>Welcome to the AX-CPT Test</h2>
-    <p>Press the <b>target</b> key only when an <b>X</b> appears immediately after an <b>A</b>.<br>For all other letters, press the <b>non-target</b> key.</p>
+<h2 class="lang-en hidden">Welcome to the Sequence Task</h2>
+    <p class="lang-en hidden">
+      In this task, you will see a series of letters, one after another.<br>
+      Your goal is to respond <em>only</em> to the letter <b>X</b>, and <em>only</em> if it appears immediately after the letter <b>A</b>.<br><br>
+      - If you see <b>A</b> and <em>then</em> <b>X</b> → press <b>any key</b> when the <b>X</b> appears.<br>
+      - If you see <b>A</b> and <em>then</em> another letter (like <b>Y</b>) → <b>do not press any key</b>.<br>
+      - If you see another letter (like <b>B</b>) and <em>then</em> <b>X</b> → <b>do not press any key</b>.<br><br>
+      Only press for the <b>X</b> in an <b>A-X</b> pair.<br>
+      We will have a practice session before we begin.<br>
+      Press <strong>'Continue'</strong> to proceed.<br>
+    </p>
+
+    <h2 class="lang-mr hidden">सिक्वेन्स टास्कमध्ये आपले स्वागत आहे</h2>
+    <p class="lang-mr hidden">
+      या चाचणीत, तुम्हाला एकामागोमाग एक अक्षरे दिसतील.<br>
+      तुमचे ध्येय <b>फक्त X</b> अक्षरासाठी की दाबणे आहे, आणि <b>फक्त तेव्हाच</b> जेव्हा ते <b>A</b> अक्षरानंतर लगेच येते.<br><br>
+      - जर तुम्हाला <b>A</b> आणि <em>नंतर</em> <b>X</b> दिसले → <b>X</b> दिसल्यावर <b>कोणतीही की</b> दाबा.<br>
+      - जर तुम्हाला <b>A</b> आणि <em>नंतर</em> दुसरे अक्षर (जसे <b>Y</b>) दिसले → <b>कोणतीही की दाबू नका</b>.<br>
+      - जर तुम्हाला दुसरे अक्षर (जसे <b>B</b>) आणि <em>नंतर</em> <b>X</b> दिसले → <b>कोणतीही की दाबू नका</b>.<br><br>
+      फक्त <b>A-X</b> जोडीतील <b>X</b> साठीच की दाबा.<br>
+      सुरुवात करण्यापूर्वी आपण सराव करूया.<br>
+      पुढे जाण्यासाठी <strong>'Continue'</strong> वर क्लिक करा.<br>
+    </p>
+
+    <h2 class="lang-hi hidden">अनुक्रम कार्य में आपका स्वागत है</h2>
+    <p class="lang-hi hidden">
+      इस कार्य में, आपको एक के बाद एक अक्षर दिखाई देंगे।<br>
+      आपका लक्ष्य <b>केवल X</b> अक्षर के लिए बटन दबाना है, और <b>केवल तभी</b> जब वह <b>A</b> अक्षर के ठीक बाद आए।<br><br>
+      - यदि आपको <b>A</b> और <em>फिर</em> <b>X</b> दिखाई दे → <b>X</b> दिखने पर <b>कोई भी बटन</b> दबाएं।<br>
+      - यदि आपको <b>A</b> और <em>फिर</em> कोई अन्य अक्षर (जैसे <b>Y</b>) दिखाई दे → <b>कोई भी बटन न दबाएं</b>।<br>
+      - यदि आपको कोई अन्य अक्षर (जैसे <b>B</b>) और <em>फिर</em> <b>X</b> दिखाई दे → <b>कोई भी बटन न दबाएं</b>।<br><br>
+      केवल <b>A-X</b> जोड़ी में <b>X</b> के लिए ही बटन दबाएं।<br>
+      शुरू करने से पहले हम अभ्यास करेंगे।<br>
+      आगे बढ़ने के लिए <strong>'Continue'</strong> पर क्लिक करें।<br>
+    </p>   
     <div style="text-align:center;margin-top:8px">
       <button class="btn primary" onclick="hideInstructions()" autofocus>Continue</button>
     </div>

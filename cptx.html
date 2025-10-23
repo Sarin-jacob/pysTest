@@ -38,6 +38,13 @@
               <span class="slider"></span>
           </label>
           </div>
+              <hr style="margin:10px 0;border:none;border-top:1px solid var(--input-border)" > 
+    <label>Test Language</label>
+    <select id="testLang">
+      <option value="en">English </option>
+      <option value="mr">Marathi</option>
+      <option value="hi">Hindi</option>
+    </select>
         <hr style="margin:10px 0;border:none;border-top:1px solid var(--input-border)">
         <label>STIMULUS_TIME (ms)</label>
         <input id="stimTime" type="number" value="600">
@@ -54,7 +61,7 @@
 
     <div style="margin-top:12px" class="row">
       <button id="startBtn" class="btn primary">Start Test</button>
-      <button id="resetBtn" class="btn">Reset</button>
+      <button id="resetBtn" class="btn" onclick="location.reload()">Reset</button>
     </div>
     <div style="margin-top:12px" class="row">
       <button id="openReport" class="btn">Open Report</button>
@@ -67,7 +74,7 @@
     <div class="stage">
       <div class="statusRow" style="width:100%">
         <div class="infoBox" id="status">Ready. Configure and press Start Test.</div>
-        <button id="modeToggle">🌙</button>
+      <button id="modeToggle" onclick="toggleMode()">🌙</button>
       </div>
       <div id="countdownOverlay"><div id="countdownNum">3</div></div>
       <div class="stimulus cpt" id="stimulus" role="status" aria-live="polite">
@@ -99,10 +106,31 @@
 
 <div id="instructions">
   <div>
-    <h2>Welcome to the CPT</h2>
-    <p>
-      Press the response key when you see the letter <b>X</b>.<br>
-      Do not respond to any other letter.
+    <h2 class="lang-en hidden">Welcome to the Letter Task</h2>
+    <p class="lang-en hidden">
+      In this task, you will see a series of single letters.<br><br>
+      - If you see the letter <b>X</b> → press <b>any key</b> as quickly as you can.<br>
+      - If you see <b>any other letter</b> (like A, B, Y, etc.) → <b>do not press any key</b>.<br><br>
+      We will have a practice session before we begin.<br>
+      Press <strong>'Continue'</strong> to proceed.<br>
+    </p>
+
+    <h2 class="lang-mr hidden">लेटर टास्कमध्ये आपले स्वागत आहे</h2>
+    <p class="lang-mr hidden">
+      या चाचणीत, तुम्हाला अक्षरांची एक मालिका दिसेल.<br><br>
+      - जर तुम्हाला <b>X</b> हे अक्षर दिसले → शक्य तितक्या लवकर <b>कोणतीही की</b> (key) दाबा.<br>
+      - जर तुम्हाला <b>इतर कोणतेही अक्षर</b> (जसे A, B, Y, इ.) दिसले → <b>कोणतीही की दाबू नका</b>.<br><br>
+      सुरुवात करण्यापूर्वी आपण सराव करूया.<br>
+      पुढे जाण्यासाठी <strong>'Continue'</strong> वर क्लिक करा.<br>
+    </p>
+
+    <h2 class="lang-hi hidden">लेटर कार्य में आपका स्वागत है</h2>
+    <p class="lang-hi hidden">
+      इस कार्य में, आपको एक-एक करके अक्षर दिखाई देंगे।<br><br>
+      - यदि आपको <b>X</b> अक्षर दिखाई दे → जितनी जल्दी हो सके <b>कोई भी बटन</b> दबाएं।<br>
+      - यदि आपको <b>कोई अन्य अक्षर</b> (जैसे A, B, Y, आदि) दिखाई दे → <b>कोई भी बटन न दबाएं</b>।<br><br>
+      शुरू करने से पहले हम अभ्यास करेंगे।<br>
+      आगे बढ़ने के लिए <strong>'Continue'</strong> पर क्लिक करें।<br>
     </p>
     <div style="text-align:center;margin-top:8px">
       <button class="btn primary" onclick="hideInstructions()" autofocus>Continue</button>

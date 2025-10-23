@@ -5,6 +5,7 @@
    - bindings modal for key assignments
    - CSV + PDF report using Chart.js + jsPDF
 */
+function switchLangStroop(){}
 
 window.addEventListener("load", () => {
   document.querySelectorAll("#sidebar input, #sidebar select").forEach(el => {
@@ -16,6 +17,7 @@ window.addEventListener("load", () => {
       }
     });
   });
+  $("testLang").addEventListener("change",switchLangStroop())
 });
 
 // subject fields always blank on refresh
@@ -26,16 +28,7 @@ $('numColors').value =  '3';
 
 
 (() => {
-  // palette (same as gng-export - choose top N)
-  const ALL_COLORS = [
-    {name:'RED', css:'#ef4444'},
-    {name:'GREEN', css:'#10b981'},
-    {name:'BLUE', css:'#3b82f6'},
-    {name:'YELLOW', css:'#f59e0b'},
-    {name:'PURPLE', css:'#8b5cf6'},
-    {name:'BROWN', css:'#af623a'},
-    {name:'ORANGE', css:'#fb923c'}
-  ];
+
 
   // DOM refs
   const subjectIdEl = $('subjectId');
@@ -68,9 +61,6 @@ $('numColors').value =  '3';
   const rtCanvas = $('rtChart');
   const accCanvas = $('accChart');
   const countsCanvas = $('countsChart');
-  const modernAlert = $('modernAlert');
-  const modernAlertMessage = $('modernAlertMessage');
-  const modeToggle = $("modeToggle");
   const countOverlay = $('countdownOverlay');
   const countNum = $('countdownNum');
   const openReport = $('openReport');
@@ -95,6 +85,36 @@ $('numColors').value =  '3';
   let isTrialMode = false;
   let hasTrialRunCompleted = false;
   const TRIAL_RUN_COUNT = 5;
+
+  let ALL_COLORS = [];
+
+function switchLangStroop(){
+  const testLangEl = $("testLang");
+  switchLang(testLangEl.value);
+  const scolors= document.getElementsByClassName("scolor");
+  const swords= document.getElementsByClassName("sword");
+  if (respondToEl.value == "word"){
+    for (let el of scolors){
+        el.classList.add('noshow');
+    }
+    for (let el of swords){
+        el.classList.remove('noshow');
+      }
+    }else{
+    for (let el of swords){
+        el.classList.add('noshow');
+    }
+    for (let el of scolors){
+        el.classList.remove('noshow');
+      }
+  }
+ALL_COLORS = generateAllColors(testLangEl.value);
+// loadDefaultBindings();
+// rebuildKeybar();
+// renderBindingsList();
+}
+
+switchLangStroop();
 
   // default bindings loader
   function loadDefaultBindings(n){
@@ -201,8 +221,10 @@ $('numColors').value =  '3';
       trialsArr.push({
         idx: i+1,
         word: wordObj.name,
+        wordEng:wordObj.key,
         wordCSS: wordObj.css,
         ink: inkObj.name,
+        inkEng: inkObj.key,
         inkCSS: inkObj.css,
         isMatch,
         angle
@@ -223,12 +245,13 @@ $('numColors').value =  '3';
     stimTimeout = setTimeout(()=>{
       if(awaitingResponse){
         awaitingResponse = false;
+        console.log("is trial mode:",isTrialMode);
         if(!isTrialMode){
         // omission
         results.push({
           trial: tr.idx,
-          word: tr.word,
-          ink: tr.ink,
+          word: tr.wordEng,
+          ink: tr.inkEng,
           angle: tr.angle,
           keyPressed: '',
           correctKey: bindings[(respondToEl.value === 'color') ? tr.ink : tr.word] || '',
@@ -289,8 +312,8 @@ $('numColors').value =  '3';
     if(!isTrialMode){
     results.push({
       trial: tr.idx,
-      word: tr.word,
-      ink: tr.ink,
+      word: tr.wordEng,
+      ink: tr.inkEng,
       angle: tr.angle,
       keyPressed: key || '',
       correctKey: correctKey || '',
@@ -308,6 +331,8 @@ $('numColors').value =  '3';
     setTimeout(()=> stimWordEl.style.boxShadow = '', 160);
   }
     // visual flash on keybar
+    //feedback blank
+    stimWordEl.textContent=' ';
     highlightKeyByKey(key);
 
     // proceed after ISI
@@ -422,11 +447,6 @@ let countdownInterval = null;
     `;
   }
 
-    // Dark/Light mode toggle
-    modeToggle.addEventListener("click", () => {
-      document.body.classList.toggle("light");
-      modeToggle.textContent = document.body.classList.contains("light") ? "🌞" : "🌙";
-    });
   function generateCSV(){
   const sid = subjectIdEl.value.trim() || 'subject';
     const hdr = ['trial','word','ink','angle','keyPressed','correctKey','correct','RT'];
@@ -663,11 +683,11 @@ async function renderCharts(disableAnimation = false) {
     // --- Data Prep ---
     const mode = respondToEl.value;
     const usedColors = ALL_COLORS.slice(0, parseInt(numColorsEl.value, 10));
-    const colorNames = usedColors.map(c => c.name);
+    const colorNames = usedColors.map(c => c.key);
 
     // --- Chart 2: Accuracy by Color ---
-    const accuracyData = colorNames.map(name => {
-        const colorResults = results.filter(r => ((mode === 'color') ? r.ink : r.word) === name);
+    const accuracyData =  usedColors.map(colorObj => {
+        const colorResults = results.filter(r => ((mode === 'color') ? r.ink : r.word) === colorObj.key);
         const correctCount = colorResults.filter(r => r.correct === 1).length;
         const totalCount = colorResults.length;
         return totalCount > 0 ? Math.round((correctCount / totalCount) * 100) : 0;
@@ -704,12 +724,12 @@ async function renderCharts(disableAnimation = false) {
     // --- Chart 3: Response Counts by Color ---
     const countLabels = ['Correct', 'Omissions', 'Commissions'];
     const colorCountDatasets = usedColors.map(color => {
-        const colorResults = results.filter(r => ((mode === 'color') ? r.ink : r.word) === color.name);
+        const colorResults = results.filter(r => ((mode === 'color') ? r.ink : r.word) === color.key);
         const correctCount = colorResults.filter(r => r.correct === 1).length;
         const commissionCount = colorResults.filter(r => r.correct === 0 && r.keyPressed !== '').length;
         const omissionCount = colorResults.filter(r => r.keyPressed === '').length;
         return {
-            label: color.name,
+            label: color.key,
             data: [correctCount, commissionCount, omissionCount],
             backgroundColor: color.css
         };

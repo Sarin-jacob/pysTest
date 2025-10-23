@@ -11,7 +11,7 @@ const popup = $('popup'), closePopup = $('closePopup'), csvBtn = $('csvBtn'), pd
 const rtCanvas = $('rtChart'), perfCanvas = $('perfChart');
 const countOverlay = $('countdownOverlay'), countNum = $('countdownNum'), sideBar = $('sidebar');
 const targetBtn = $('targetBtn');
-const modeToggle = $('modeToggle'), trialRunCheckbox = $('trialRunCheckbox');
+const trialRunCheckbox = $('trialRunCheckbox');
 
 let trials = [], currentIndex = -1, awaiting = false, stimShownAt = 0;
 let stimTimeout = null, isiTimeout = null;
@@ -23,6 +23,7 @@ let hasTrialRunCompleted = false;
 const TRIAL_RUN_COUNT = 5;
 
 updateKeyLabels();
+switchLang($("testLang").value);
 
 window.addEventListener('load', ()=>{
   if(localStorage['ax_seen_instructions'] !== '1') { localStorage['ax_seen_instructions']='1'; }
@@ -37,8 +38,9 @@ window.addEventListener('load', ()=>{
   saveDefaults.addEventListener('click', saveDefaultsFn);
   targetBtn.addEventListener('click', ()=> simulateKey('target'));
   document.addEventListener('keydown', handleKeyDown);
-  modeToggle.addEventListener('click', ()=> { document.body.classList.toggle('light'); modeToggle.textContent = document.body.classList.contains('light') ? '🌞' : '🌙'; });
   targetKeyEl.addEventListener('input', updateKeyLabels);
+  $("testLang").addEventListener("change",switchLang($("testLang").value))
+
 });
 
 function updateKeyLabels() {

@@ -18,6 +18,7 @@
   --shadow-color: rgba(0,0,0,0.22);
 }
 
+/* html.light { */
 body.light {
   --bg-color: #F4F4F5;
   --text-color: #18181B;
@@ -264,7 +265,7 @@ canvas { background: #fff; border-radius: 8px; display: block; margin: 12px auto
 /* --- Test-Specific Unique Styles --- */
 
 /* Stroop */
-.stimulus .word { display: inline-block; will-change: transform;transition: none; }
+.stimulus .word { display: inline-block; will-change: transform;transition: none; min-width: 10vw;}
 .keybar { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 6px; }
 .key {
   display: flex;
@@ -435,4 +436,8 @@ html {
   font-size: 14px;
   min-width: 31px;
   min-height: 31px;
+}
+
+.hidden,.noshow {
+  display: none !important;
 }

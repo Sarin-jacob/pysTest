@@ -5,6 +5,7 @@
   <title>Go/No-Go Test</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="common.css">
+<script src="util.js"></script>
 </head>
 <body>
 <div id="modernAlert"><p id="modernAlertMessage" style="margin:0"></p></div>
@@ -39,6 +40,13 @@
               <span class="slider"></span>
           </label>
           </div>
+    <hr style="margin:10px 0;border:none;border-top:1px solid var(--input-border)" > 
+    <label>Test Language</label>
+    <select id="testLang">
+      <option value="en">English </option>
+      <option value="mr">Marathi</option>
+      <option value="hi">Hindi</option>
+    </select>
         <hr style="margin:10px 0;border:none;border-top:1px solid var(--input-border)">
         <label>Stimulus Time (ms)</label>
         <input id="stimTime" type="number" value="1000">
@@ -63,11 +71,11 @@
           <div class="colour-div">
             <div class="color-parent-div">
             <label>Go Color</label>
-            <input id="goColor" type="color" value="#0000FF">
+            <input id="goColor" type="color" value="yellow">
           </div>
           <div class="color-parent-div">
             <label>No-Go Color</label>
-            <input id="nogoColor" type="color" value="#FFA500">
+            <input id="nogoColor" type="color" value="blue">
           </div>
         </div>
       </div>
@@ -85,7 +93,7 @@
     <div class="stage">
       <div class="statusRow">
         <div class="infoBox" id="status" style="display: none;">Ready. Configure and press Start Test.</div>
-        <button id="modeToggle">🌙</button>
+        <button id="modeToggle" onclick="toggleMode()">🌙</button>
       </div>
       
       <div id="countdownOverlay"><div id="countdownNum">3</div></div>
@@ -101,18 +109,25 @@
 
 <div id="instructions">
   <div>
-    <h2>Welcome to the Go/No-Go Test</h2>
-    <p>
-      In this test, you will see either a <b>Go</b> or <b>No-Go</b> stimulus.<br><br>
-      - If you see a <span style="color:lime;">Go</span> stimulus → press <b>any key</b> as quickly as possible.<br>
-      - If you see a <span style="color:red;">No-Go</span> stimulus → <b>do not press any key</b>.<br><br>
-      If "Use Texture" is <b>ON</b>:<br>
-      ✅ Go = Green Tick<br>
-      ❌ No-Go = Red Cross<br><br>
-      If "Use Texture" is <b>OFF</b>:<br>
-      🟢 Go = Green Circle<br>
-      🔴 No-Go = Red Circle<br><br>
-      Your performance will be scored based on reaction times, omissions (missed Go), and commissions (pressed on No-Go).
+    <h2 class="lang-en hidden">Welcome to the Go/No-Go Task</h2>
+    <p class="lang-en hidden">
+      In this task, you will see either a <span style="color:yellow;font-size: x-large;">⬤</span> or <span style="color:blue;font-size: x-large;">⬤</span> Circle.<br><br>
+      - If you see a <span style="color:yellow;font-size: x-large;">⬤</span> Circle → press <b>any key</b> as quickly as as you can.<br>
+      - If you see a <span style="color:blue;font-size: x-large;">⬤</span> Circle → <b>do not press any key</b>.<br><br>
+      We will have a practice session before we begin.<br>
+      Press <strong>'Continue'</strong> to proceed.<br>
+    </p>
+    <h2 class="lang-mr hidden" >गो/नो-गो टास्कमध्ये आपले स्वागत आहे</h2>
+    <p class="lang-mr hidden">
+      या चाचणीत तुम्हाला जेवढ्या लवकर होऊ शकते तेवढ्या लवकर <b>कुठलीही बटन</b> दाबायची आहे <b>फक्त पिवळा रंगाचा गोल </b><span style="color:yellow;font-size: x-large;">⬤</span> दिसल्यावर. <br>बाकी कुठल्याही दुसऱ्या रंगावर बटन <b>नाही </b>दाबायची आहे. <br><br>
+      हम शुरू करने से पहले इसका अभ्यास करेंगे <br>
+      पुढे जाण्यासाठी <strong>'Continue'</strong> वर क्लिक करा.<br>
+    </p>
+    <h2 class="lang-hi hidden">गो/नो-गो कार्य में आपका स्वागत है</h2>
+    <p class="lang-hi hidden">
+      इस कार्य में आपको जब भी <b>पीला रंग का गोल </b><span style="color:yellow;font-size: x-large;">⬤</span> दिखेगा, तब जितने जलदी हो सके उतणे जलदी किसी भी <b> बटन को दबाइये|</b> दुसरे रंग पर बटन <b>नहीं</b> दबाना हैं| <br><br>
+      आपण सुरुवात करायच्या आधी सराव करूया. <br>
+      आगे बढने के लिए <strong>'Continue'</strong> बटन पर क्लिक करे|.<br>
     </p>
     <div style="text-align:center;margin-top:8px">
       <button class="btn primary" onclick="hideInstructions()" autofocus>Continue</button>
@@ -135,7 +150,6 @@
   </div>
 </div>
 
-<script src="util.js"></script>
 <script src="gng.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://unpkg.com/jspdf@latest/dist/jspdf.umd.min.js"></script>
