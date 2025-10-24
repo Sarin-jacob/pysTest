@@ -44,7 +44,7 @@ RUN npx terser public_src/util.js \
     --name-cache ${NAME_CACHE} \
     -o public_dist/util.js
 
-RUN for f in public_src/cpt.js public_src/gng.js public_src/stroop.js; do \
+RUN for f in public_src/cptx.js public_src/cptax.js public_src/gng.js public_src/stroop.js; do \
       OUT_FILE="public_dist/$(basename "$f")"; \
       npx terser "$f" \
         -c \
