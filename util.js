@@ -274,4 +274,15 @@ if(fsake){
   hideInstructions();
   showAlert();
   toggleMode();
+  // added again so there would be function assignment
+    beep();
+  generateAllColors();
+  switchLang();
+  uploadCsv();
+  getContrastTextColor();
+  getLuminance();
+  getStandardFileName();
+  hideInstructions();
+  showAlert();
+  toggleMode();
 }
