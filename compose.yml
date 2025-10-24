@@ -15,7 +15,6 @@ services:
       # - APP_DOMAIN=example.com
     volumes:
       - psytest_data:/app/uploads
-    restart: unless-stopped
 
 volumes:
   psytest_data:
