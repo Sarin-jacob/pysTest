@@ -77,6 +77,7 @@ RUN for f in $(find public_src -name '*.html'); do \
 # ==================================================================
 FROM gcr.io/distroless/python3-debian12:nonroot
 USER nonroot
+ARG PYTHON_VERSION=3.11
 
 WORKDIR /app
 
