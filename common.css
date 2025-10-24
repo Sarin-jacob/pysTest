@@ -292,7 +292,7 @@ canvas { background: #fff; border-radius: 8px; display: block; margin: 12px auto
 .letters-grid label { display:flex; align-items:center; gap:8px; font-size:13px; }
 
 /* --- Utility & Responsive --- */
-#modeToggle {
+#modeToggle,.floatbutton {
   position: absolute;
   top: 15px;
   right: 15px;
@@ -302,6 +302,7 @@ canvas { background: #fff; border-radius: 8px; display: block; margin: 12px auto
   padding: 4px 4px;
   border-radius: 10px;
   font-size: 14px;
+  
 }
 
 @media (max-width:900px) {
