@@ -133,7 +133,7 @@ function nextTrial() {
   trialActive = true;
   statusEl.textContent = `Trial ${trial} / ${config.NUM_TRIALS}`;
   currentStimulus = (Math.random() < config.GO_PROBABILITY) ? "GO" : "NOGO";
-  stimulusDiv.innerHTML = `<span style="color:red;font-size:128px;font-weight:lighter">+</span>`;
+  stimulusDiv.innerHTML = `<span style="color:var(--button-text);font-size:128px;font-weight:lighter">+</span>`;
   setTimeout(() => {
     if (!trialActive) return;
   showStimulus(currentStimulus === "GO");

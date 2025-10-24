@@ -218,7 +218,7 @@ details.advanced-config summary {
 /* Test-specific stimulus styles (using clamp for robust responsiveness) */
 .stimulus.stroop { font-size: clamp(58px, 50cqw, 39cqh); }
 .stimulus.cpt    { font-size: clamp(120px, 50cqw, 80cqh); }
-.stimulus.gng    { font-size: clamp(240px, 50cqw, 75cqh); }
+.stimulus.gng    { font-size: clamp(240px, 50cqw, 65cqh); }
 .stimulus.gng.big { font-size: clamp(400px, 50cqw, 90cqh); }
 
 /* --- Popups, Modals & Overlays --- */

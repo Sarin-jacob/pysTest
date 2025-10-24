@@ -212,7 +212,7 @@ async function uploadCsv(blob, fileName) {
  * Function to change language
  * @param {string} lang The language code to  switch to (e.g., 'en', 'mr', 'hi ).
  */
-function switchLang( lang) {
+function switchLang( lang,flag=false) {
   const langClass ={"en":"lang-en","mr":"lang-mr","hi":"lang-hi"};
   // add hidden class to all language class selectors except the selected one
   Object.values(langClass).forEach( cls => {
@@ -225,7 +225,7 @@ function switchLang( lang) {
       }
     }
   });
-  
+  // if(flag)location.reload();
 
 }
 

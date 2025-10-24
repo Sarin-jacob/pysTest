@@ -153,7 +153,7 @@ function nextTrial(){
   }
   stimDiv.textContent="+";
   stimDiv.style.fontWeight="lighter"
-  stimDiv.style.color="red";
+  stimDiv.style.color="var(--button-text)";
   stimDiv.style.fontSize="128px";
   setTimeout(()=>{
   stimDiv.style.fontSize=''
