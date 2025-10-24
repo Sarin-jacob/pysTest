@@ -11,6 +11,22 @@ const rtCanvas = $('rtChart'), perfCanvas = $('perfChart');
 const instructionsDiv = $('instructions'), trialRunCheckbox = $('trialRunCheckbox');
 const countdownOverlay = $('countdownOverlay'), countdownNum = $('countdownNum');
 
+window.addEventListener("load", () => {
+          const testName = "GNG"; 
+  const excludedIds = ["subjectId", "subjectAge", "subjectSex"];
+    const getStorageKey = (id) => `${testName}_${id}`;
+  document.querySelectorAll("#sidebar input, #sidebar select").forEach(el => {
+        if (excludedIds.includes(el.id)) return; 
+    const storageKey = getStorageKey(el.id);
+            if (localStorage[storageKey]) {
+      el.value = localStorage[storageKey];
+    }
+        el.addEventListener("change", () => {
+      localStorage[storageKey] = el.value;
+    });
+  });
+});
+
 switchLang($("testLang").value);
 
 let trial, config, results, subjectId;

@@ -8,17 +8,22 @@
 function switchLangStroop(){}
 
 window.addEventListener("load", () => {
+          const testName = "STROOP"; 
+  const excludedIds = ["subjectId", "subjectAge", "subjectSex"];
+    const getStorageKey = (id) => `${testName}_${id}`;
   document.querySelectorAll("#sidebar input, #sidebar select").forEach(el => {
-    if (["subjectId","subjectAge","subjectSex"].includes(el.id)) return; // skip
-    if (localStorage[el.id]) el.value = localStorage[el.id];
-    el.addEventListener("change", () => {
-      if (!["subjectId","subjectAge","subjectSex"].includes(el.id)) {
-        localStorage[el.id] = el.value;
-      }
+        if (excludedIds.includes(el.id)) return; 
+    const storageKey = getStorageKey(el.id);
+            if (localStorage[storageKey]) {
+      el.value = localStorage[storageKey];
+    }
+        el.addEventListener("change", () => {
+      localStorage[storageKey] = el.value;
     });
   });
   $("testLang").addEventListener("change",switchLangStroop())
 });
+
 
 // subject fields always blank on refresh
 $('subjectId').value = '';

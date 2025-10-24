@@ -23,12 +23,26 @@ let hasTrialRunCompleted = false;
 const TRIAL_RUN_COUNT = 5;
 const PLUS_TIME=350;
 
+window.addEventListener("load", () => {
+          const testName = "CPTX"; 
+  const excludedIds = ["subjectId", "subjectAge", "subjectSex"];
+    const getStorageKey = (id) => `${testName}_${id}`;
+  document.querySelectorAll("#sidebar input, #sidebar select").forEach(el => {
+        if (excludedIds.includes(el.id)) return; 
+    const storageKey = getStorageKey(el.id);
+            if (localStorage[storageKey]) {
+      el.value = localStorage[storageKey];
+    }
+        el.addEventListener("change", () => {
+      localStorage[storageKey] = el.value;
+    });
+  });
+});
+
 updateKeyLabels();
 switchLang($("testLang").value);
 
 window.addEventListener('load', ()=>{
-  if(localStorage['ax_seen_instructions'] !== '1') { localStorage['ax_seen_instructions']='1'; }
-  ['numTrials','stimTime','isi','goProb','targetKey'].forEach(k => { if(localStorage[k]!==undefined && $(k)) $(k).value = localStorage[k]; });
   subjectIdEl.value=''; subjectAgeEl.value=''; subjectSexEl.value='';
   startBtn.addEventListener('click', startTest);
   resetBtn.addEventListener('click', resetAll);
@@ -36,7 +50,7 @@ window.addEventListener('load', ()=>{
   closePopup.addEventListener('click', ()=> popup.style.display='none');
   csvBtn.addEventListener('click', downloadCSV);
   pdfBtn.addEventListener('click', downloadPDF);
-  saveDefaults.addEventListener('click', saveDefaultsFn);
+  // saveDefaults.addEventListener('click', saveDefaultsFn);
   targetBtn.addEventListener('click', ()=> simulateKey('target'));
   document.addEventListener('keydown', handleKeyDown);
   targetKeyEl.addEventListener('input', updateKeyLabels);
