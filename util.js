@@ -22,6 +22,34 @@ function debugy() {
 // Attach the function to the window object
 window.debugy = debugy;
 
+/**
+ * Function to hide the Intruction overlay
+ */
+function hideInstructions() {
+  $("instructions").style.display = "none";
+  $('subjectId').focus();
+}
+
+// Disable transition, apply saved mode, then restore transition
+window.addEventListener("DOMContentLoaded", () => {
+  $("modeToggle").addEventListener("click",toggleMode);
+  // Temporarily disable transitions
+  document.body.style.transition = "none";
+  const savedMode = localStorage.getItem("mode");
+  const modeToggle = document.getElementById('modeToggle');
+
+  if (savedMode === "light") {
+    document.body.classList.add("light");
+    if (modeToggle) modeToggle.textContent = "🌞";
+  } else {
+    document.body.classList.remove("light");
+    if (modeToggle) modeToggle.textContent = "🌙";
+  }
+
+  // Force reflow and restore transition
+  void document.body.offsetHeight; // forces reflow
+  document.body.style.transition = "background var(--transition-speed) ease, color var(--transition-speed) ease";
+});
 
 
 /**
@@ -52,6 +80,20 @@ function showAlert(message) {
   _alertTimeout = setTimeout(() => alertBox.classList.remove("show"), 3000);
 }
 
+/**
+ * Mode Toggle Helper
+ * Toggles between light and dark mode by adding/removing a CSS class on the body
+ * 
+ */
+function toggleMode() {
+  const modeToggle = $('modeToggle');
+if (modeToggle) {
+      document.body.classList.toggle("light");
+      let isLight=document.body.classList.contains("light")
+      modeToggle.textContent = isLight ? "🌞" : "🌙";
+      localStorage.setItem("mode", isLight ? "light" : "dark");
+  }
+}
 
 // --- Audio Feedback ---
 
@@ -142,10 +184,11 @@ async function uploadCsv(blob, fileName) {
       body: formData,
     });
 
+    if (_APP_DEBUG_MODE) {
     if (!response.ok) {
       throw new Error(`Server responded with an error: ${response.status}`);
     }
-
+  }
     const result = await response.json();
     
     // MODIFIED: Only log if debug mode is enabled
@@ -163,4 +206,57 @@ async function uploadCsv(blob, fileName) {
     
     // throw error; // Still throw the error so your other code can handle it
   }
+}
+
+/**
+ * Function to change language
+ * @param {string} lang The language code to  switch to (e.g., 'en', 'mr', 'hi ).
+ */
+function switchLang( lang,flag=false) {
+  const langClass ={"en":"lang-en","mr":"lang-mr","hi":"lang-hi"};
+  // add hidden class to all language class selectors except the selected one
+  Object.values(langClass).forEach( cls => {
+    const elements = document.getElementsByClassName(cls);
+    for (let el of elements) {
+      if (cls === langClass[lang]) {
+        el.classList.remove('hidden');
+      } else {
+        el.classList.add('hidden');
+      }
+    }
+  });
+  // if(flag)location.reload();
+
+}
+
+/**
+ * Generates an array of color objects with stable keys and translated names.
+ *
+ * @param {string} lang - The language code (e.g., 'en', 'mr', 'hi').
+ * @returns {Array<Object>} The array of color objects.
+ */
+function generateAllColors(lang = 'en') {
+  
+  // Master list of all color translations
+  const colorTranslations = {
+    RED:    { en: 'RED',    mr: 'लाल',    hi: 'लाल',    css: '#ef4444' },
+    GREEN:  { en: 'GREEN',  mr: 'हिरवा',   hi: 'हरा',     css: '#10b981' },
+    BLUE:   { en: 'BLUE',   mr: 'निळा',    hi: 'नीला',    css: '#3b82f6' },
+    YELLOW: { en: 'YELLOW', mr: 'पिवळा',  hi: 'पीला',    css: '#f59e0b' },
+    PURPLE: { en: 'PURPLE', mr: 'जांभळा',  hi: 'बैंगनी',  css: '#8b5cf6' },
+    BROWN:  { en: 'BROWN',  mr: 'तपकिरी',  hi: 'भूरा',     css: '#af623a' },
+    ORANGE: { en: 'ORANGE', mr: 'नारंगी',  hi: 'नारंगी',  css: '#fb923c' }
+  };
+
+  // Build the array by mapping over the master list
+  const allColors = Object.keys(colorTranslations).map(key => {
+    const colorData = colorTranslations[key];
+    return {
+      key: key, // <-- The stable English key (e.Example: 'RED')
+      name: colorData[lang] || colorData['en'], // <-- The displayed (translated) name
+      css: colorData.css
+    };
+  });
+
+  return allColors;
 }

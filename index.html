@@ -7,55 +7,79 @@
   <link rel="stylesheet" href="common.css">
 </head>
 <body class="landing-body">
+  <!-- <button id="languageToggle">🌐</button> -->
   <button id="modeToggle">🌙</button>
 
-  <header class="landing-header">
+  <header class="landing-header translate">
     <h1>Cognitive Test Suite</h1>
     <p>
-      Welcome! This suite includes classic psychological tasks designed to measure attention, 
-      response inhibition, and cognitive control. Choose a test below to begin.
+    Welcome! This suite includes psychological tasks designed to measure attention, 
+    response inhibition, and cognitive control. Choose a test below to begin.
     </p>
   </header>
 
-  <div class="landing-grid">
+<div class="landing-grid">
     <div class="landing-card">
-      <h2>Go/No-Go Test</h2>
-      <p>
-        Measures response inhibition and attention. Respond quickly to "Go" stimuli but withhold 
-        response for "No-Go" stimuli. Tracks reaction times, omissions, commissions, and accuracy.
-      </p>
-      <a href="gng.html" class="btn primary">Start Test</a>
+        <h2>Go/No-Go Test</h2>
+        <p>
+            Designed to measure response inhibition and attentional control. Participants respond 
+            as quickly as possible to "Go" stimuli and deliberately withhold responses for "No-Go" 
+            stimuli. Tracks reaction times, errors of commission and omission, and overall accuracy.
+        </p>
+        <a href="gng.html" class="btn primary">Start Test</a>
     </div>
 
     <div class="landing-card">
-      <h2>Stroop Test</h2>
-      <p>
-        Assesses cognitive control and interference. Identify the color of the ink a word is printed in,
-        even if the word itself names a different color.
-      </p>
-      <a href="stroop.html" class="btn primary">Start Test</a>
+        <h2>Stroop Test</h2>
+        <p>
+            Assesses cognitive control, selective attention, and interference resolution. Identify 
+            the ink color of words while ignoring the word meaning itself, which may conflict with 
+            the color.
+        </p>
+        <a href="stroop.html" class="btn primary">Start Test</a>
     </div>
 
     <div class="landing-card">
-      <h2>Continuous Performance Test (CPT)</h2>
-      <p>
-        Evaluates sustained and selective attention. Detect specific target sequences while ignoring
-        non-targets, providing measures of vigilance and impulsivity.
-      </p>
-      <a href="cpt.html" class="btn primary">Start Test</a>
+        <h2>Continuous Performance Test (CPTX)</h2>
+        <p>
+            Evaluates sustained and selective attention. Detect specific target sequences while 
+            ignoring non-targets, measuring vigilance, reaction time consistency, and impulsivity.
+        </p>
+        <a href="cptx.html" class="btn primary">Start Test</a>
     </div>
-  </div>
+    <div class="landing-card">
+        <h2>Continuous Performance Test (CPT-AX)</h2>
+        <p>
+            Measures sustained attention and executive control. Identify target sequences like "A followed by X" 
+            while ignoring irrelevant sequences. Captures errors, reaction times, and attentional lapses.
+        </p>
+        <a href="cptax.html" class="btn primary">Start Test</a>
+    </div>
 
-<script src="util.js"></script>
-  <script>
-    const toggle = document.getElementById("modeToggle");
-    toggle.addEventListener("click", () => {
-      // The body class must also be toggled to trigger the theme change
-      document.body.classList.toggle("light");
-      toggle.textContent = document.body.classList.contains("light") ? "🌞" : "🌙";
-    });
-   // loadServerUrl();
-  </script>
+    <!-- <div class="landing-card">
+        <h2>Eye & Mind Test</h2>
+        <p>
+            Tracks eye movements and gaze patterns to assess visual attention and cognitive focus. 
+            Useful for detecting attention deficits, processing speed, and response patterns. 
+        </p>
+        <a href="eyemind.html" class="btn primary">Start Test</a>
+    </div> -->
+</div>
+
+
+  <script src="util.js"></script>
+
+<!-- <script src="https://cdn.jsdelivr.net/gh/Sarin-jacob/LanguageToggle/translate-toggle.js"></script>
+<script>
+  initLanguageToggle({
+    sourceLang: 'en',
+    targetLang: 'ml',
+    sourceSymbol: 'A',
+    targetSymbol: 'അ',  
+    toggleButton: $("languageToggle"),
+    // partialTranslate: true, // only elements with id 'translate' or class 'translate' will be translated
+  }); -->
+</script>
 </body>
 </html>
 
