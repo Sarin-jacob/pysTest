@@ -260,3 +260,18 @@ function generateAllColors(lang = 'en') {
 
   return allColors;
 }
+//function and variable to keep unused function available after mini
+let fsake=0;
+function fsaker() {fsake=1;}
+if(fsake){
+  beep();
+  generateAllColors();
+  switchLang();
+  uploadCsv();
+  getContrastTextColor();
+  getLuminance();
+  getStandardFileName();
+  hideInstructions();
+  showAlert();
+  toggleMode();
+}
