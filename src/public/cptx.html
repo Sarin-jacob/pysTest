@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>CPT</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="common.css">
+</head>
+<body>
+<div id="modernAlert"><p id="modernAlertMessage" style="margin:0"></p></div>
+
+<div class="container">
+  <aside id="sidebar" aria-label="Configuration">
+    <h2>Config</h2>
+
+    <label>Subject ID (required)</label>
+    <input id="subjectId" type="text" placeholder="Enter Subject ID">
+
+    <label>Age</label>
+    <input id="subjectAge" type="number" placeholder="Enter Age">
+
+    <label>Sex</label>
+    <select id="subjectSex">
+      <option value="">Select Sex</option><option>Male</option><option>Female</option><option>Other</option>
+    </select>
+
+    <label>Trials</label>
+    <input id="numTrials" type="number" value="30" min="4">
+
+    <details class="advanced-config">
+      <summary>Advanced Config</summary>
+      <div style="padding:8px">
+          <div style="display:inline-flex;width: 100%;justify-content: space-between;align-items: center;">
+          <label>Enable Trial Run</label>
+          <label class="switch">
+              <input id="trialRunCheckbox" type="checkbox" checked>
+              <span class="slider"></span>
+          </label>
+          </div>
+              <hr style="margin:10px 0;border:none;border-top:1px solid var(--input-border)" > 
+    <label>Test Language</label>
+    <select id="testLang">
+      <option value="en">English </option>
+      <option value="mr">Marathi</option>
+      <option value="hi">Hindi</option>
+    </select>
+        <hr style="margin:10px 0;border:none;border-top:1px solid var(--input-border)">
+        <label>STIMULUS_TIME (ms)</label>
+        <input id="stimTime" type="number" value="600">
+        <label>ISI (ms)</label>
+        <input id="isi" type="number" value="500">
+        <label id="goProbLabel">Target ('X') Probability</label>
+        <input id="goProb" type="number" step="0.05" min="0" max="1" value="0.4">
+        <hr style="margin:10px 0;border:none;border-top:1px solid var(--input-border)">
+        <label>Response key</label>
+        <input id="targetKey" type="text" value="Space" style="margin-bottom: 5px;" placeholder="Target key">
+        <div class="small-note">Press the named key (e.g., Space, Enter, or single letters).</div>
+      </div>
+    </details>
+
+    <div style="margin-top:12px" class="row">
+      <button id="startBtn" class="btn primary">Start Test</button>
+      <button id="resetBtn" class="btn" onclick="location.reload()">Reset</button>
+    </div>
+    <div style="margin-top:12px" class="row">
+      <button id="openReport" class="btn">Open Report</button>
+      <button id="saveDefaults" class="btn">Save Defaults</button>
+    </div>
+  </aside>
+
+  <main id="main">
+    <div id="title">CPT</div>
+    <div class="stage">
+      <div class="statusRow" style="width:100%">
+        <div class="infoBox" id="status">Ready. Configure and press Start Test.</div>
+      <button id="modeToggle" >🌙</button>
+      <button class="floatbutton" style="right: 50px;font-weight: bolder;" onclick="window.location.href='./index.html';">🏠︎</button>
+      </div>
+      <div id="countdownOverlay"><div id="countdownNum">3</div></div>
+      <div class="stimulus cpt" id="stimulus" role="status" aria-live="polite">
+        <div id="stimLetter">—</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button id="targetBtn" class="btn">Target (?)</button>
+        <div class="muted">You can use the on-screen button or press the configured key.</div>
+      </div>
+      <div id="resultsSummary" style="width:100%;max-width:920px;display:none;margin-top:8px"></div>
+    </div>
+  </main>
+</div>
+
+<div id="popup">
+  <div class="popup-card">
+    <h2 style="margin-top:0">CPT Report</h2>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center">
+      <canvas id="rtChart" width="420" height="210"></canvas>
+      <canvas id="perfChart" width="420" height="210"></canvas>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
+      <button id="csvBtn" class="btn">Download CSV</button>
+      <button id="pdfBtn" class="btn">Download PDF</button>
+      <button id="closePopup" class="btn">Close</button>
+    </div>
+  </div>
+</div>
+
+<div id="instructions">
+  <div>
+    <h2 class="lang-en hidden">Welcome to the Letter Task</h2>
+    <p class="lang-en hidden">
+      In this task, you will see a series of single letters.<br><br>
+      - If you see the letter <b>X</b> → press <b>any key</b> as quickly as you can.<br>
+      - If you see <b>any other letter</b> (like A, B, Y, etc.) → <b>do not press any key</b>.<br><br>
+      We will have a practice session before we begin.<br>
+      Press <strong>'Continue'</strong> to proceed.<br>
+    </p>
+
+    <h2 class="lang-mr hidden">लेटर टास्कमध्ये आपले स्वागत आहे</h2>
+    <p class="lang-mr hidden">
+      या चाचणीत, तुम्हाला अक्षरांची एक मालिका दिसेल.<br><br>
+      - जर तुम्हाला <b>X</b> हे अक्षर दिसले → शक्य तितक्या लवकर <b>कोणतीही की</b> (key) दाबा.<br>
+      - जर तुम्हाला <b>इतर कोणतेही अक्षर</b> (जसे A, B, Y, इ.) दिसले → <b>कोणतीही की दाबू नका</b>.<br><br>
+      सुरुवात करण्यापूर्वी आपण सराव करूया.<br>
+      पुढे जाण्यासाठी <strong>'Continue'</strong> वर क्लिक करा.<br>
+    </p>
+
+    <h2 class="lang-hi hidden">लेटर कार्य में आपका स्वागत है</h2>
+    <p class="lang-hi hidden">
+      इस कार्य में, आपको एक-एक करके अक्षर दिखाई देंगे।<br><br>
+      - यदि आपको <b>X</b> अक्षर दिखाई दे → जितनी जल्दी हो सके <b>कोई भी बटन</b> दबाएं।<br>
+      - यदि आपको <b>कोई अन्य अक्षर</b> (जैसे A, B, Y, आदि) दिखाई दे → <b>कोई भी बटन न दबाएं</b>।<br><br>
+      शुरू करने से पहले हम अभ्यास करेंगे।<br>
+      आगे बढ़ने के लिए <strong>'Continue'</strong> पर क्लिक करें।<br>
+    </p>
+    <div style="text-align:center;margin-top:8px">
+      <button class="btn primary" id="cntButton"  autofocus>Continue</button>
+    </div>
+  </div>
+</div>
+
+<script src="util.js"></script>
+<script src="cptx.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://unpkg.com/jspdf@latest/dist/jspdf.umd.min.js"></script>
+</body>
+</html>

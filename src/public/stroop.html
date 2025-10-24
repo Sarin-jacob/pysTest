@@ -35,6 +35,21 @@
     <details class="advanced-config">
       <summary>Advanced Config</summary>
       <div style="padding:10px">
+          <div style="display:inline-flex;width: 100%;justify-content: space-between;align-items: center;">
+          <label>Enable Trial Run</label>
+          <label class="switch">
+              <input id="trialRunCheckbox" type="checkbox" checked>
+              <span class="slider"></span>
+          </label>
+          </div>
+              <hr style="margin:10px 0;border:none;border-top:1px solid var(--input-border)" > 
+    <label>Test Language</label>
+    <select id="testLang">
+      <option value="en">English </option>
+      <option value="mr">Marathi</option>
+      <option value="hi">Hindi</option>
+    </select>
+        <hr style="margin:10px 0;border:none;border-top:1px solid var(--input-border)">
         <label>STIMULUS_TIME (ms)</label>
         <input id="stimTime" type="number" value="1500">
         <label>ISI (ms)</label>
@@ -95,7 +110,7 @@
 
 
     <div class="stage">
-      <div id="status" class="muted">Ready. Configure parameters and press Start Test.</div>
+      <div id="status" class="muted" style="display: none;">Ready. Configure parameters and press Start Test.</div>
 
       <div class="stimulus stroop" id="stimulus" role="status" aria-live="polite">
         <div class="word" id="stimWord">—</div>
@@ -104,7 +119,8 @@
       <div class="keybar" id="keybar"></div>
 
       <div id="resultsSummary" style="width:100%;max-width:980px;display:none;margin-top:8px"></div>
-      <button id="modeToggle">🌙</button>
+      <button class="floatbutton" style="right: 50px;font-weight: bolder;" onclick="window.location.href='./index.html';">🏠︎</button>
+      <button id="modeToggle" >🌙</button>
     </div>
     <div id="countdownOverlay"><div id="countdownNum">3</div></div>
   </main>
@@ -143,25 +159,77 @@
     <!-- Instructions overlay -->
 <div id="instructions">
   <div>
-    <h2>Welcome to the Stroop Test</h2>
-    <p>
-      In this test, you will see <b>color words</b> (like "RED", "GREEN", "BLUE") displayed in different ink colors.<br><br>
-      - If the task is set to <b>Respond to Color</b> → press the key mapped to the ink color.<br>
-      - If the task is set to <b>Respond to Word</b> → press the key mapped to the written word.<br><br>
-      Stimuli may appear rotated (multiples of 45°) depending on your config.<br><br>
-      Your performance will be scored on:<br>
-      - Reaction times<br>
-      - Correct responses<br>
-      - Omissions (missed responses)<br>
-      - Commissions (wrong responses)<br><br>
+    <h2 class="lang-en hidden scolor noshow">Welcome to the Stroop-Colour Task</h2>
+    <p class="lang-en hidden scolor noshow">
+      You will now be shown some colour names. Your task is to identify the <b>colour</b> in which the names are written and press the button corresponding to that colour.<br>
+      As you can see, there are certain buttons that have coloured stickers for their respective colours. Use these buttons to answer as quickly as you can.<br><br>
+      Eg:<br>
+      - If the word shown is <span style="color: red;">Blue </span> Then press the button with <span style="color: red;">⬤</span> sticker.<br>
+      - If the word shown is <span style="color: green;">Green</span> Then press the button with <span style="color: green;">⬤</span> sticker. <br><br>
+      We will have a practice session before we begin <br>
+      Press <strong >'Continue'</strong> to proceed<br>
     </p>
-    <button class="btn primary" onclick="hideInstructions()" autofocus>Continue</button>
+
+    <h2 class="lang-en hidden sword noshow">Welcome to the Stroop-Word Task</h2>
+    <p class="lang-en hidden sword noshow">
+      You will now be shown some colour names. Your task is to identify the <b>colour name</b> and press the button corresponding to that colour.<br>
+      As you can see, there are certain buttons that have coloured stickers for their respective colours. Use these buttons to answer as quickly as you can.<br><br>
+      Eg:<br>
+      - If the word shown is <span style="color: red;">Blue </span> Then press the button with <span style="color: blue;">⬤</span> sticker.<br>
+      - If the word shown is <span style="color: green;">Green</span> Then press the button with <span style="color: green;">⬤</span> sticker. <br><br>
+      We will have a practice session before we begin <br>
+      Press <strong >'Continue'</strong> to proceed<br>
+    </p>
+
+    <h2 class="lang-hi hidden scolor noshow">स्ट्रूप-कलर टास्क में आपका स्वागत है</h2>
+    <p class="lang-hi hidden scolor noshow">
+      इस कार्य में आपको कुछ रंग के नाम दिखाए जाएंगे| आपको वह नाम कौनसे रंग में लिखा हैं ये पहचानकर जल्द से जल्द उस रंग के स्टिकर वाली बटन को दबाना हैं  <br><br>
+      उदाहरण: <br>
+      - अगर स्क्रीनपर दिया शब्द <span style="color: red;">‘लाल’ </span>हैं, तो आपको <span style="color: red;">⬤</span> इस रंग के स्टिकरवाली बटन को दबाना हैं|   
+      - अगर स्क्रीनपर दिया शब्द <span style="color: green;">‘निळा’ </span>हैं, तो आपको <span style="color: green;">⬤</span> इस रंग के स्टिकरवाली बटन को दबाना हैं| <br><br>
+        हम शुरू करने से पहले इसका अभ्यास करेंगे <br>
+        आगे बढने के लिए <strong >'Continue'</strong>बटन पर क्लिक करे|<br>
+    </p>
+
+    <h2 class="lang-hi hidden sword noshow">स्ट्रूप-शब्द टास्क में आपका स्वागत है</h2>
+    <p class="lang-hi hidden sword noshow">
+      इस कार्य में आपको कुछ रंग के नाम दिखाए जाएंगे| आपको केवल वह रंग का नाम पहचानकर जल्द से जल्द उस रंग के स्टिकर वाली बटन को दबाना हैं <br><br>
+      उदाहरण: <br>
+      - अगर स्क्रीनपर दिया शब्द <span style="color: red;">‘लाल’ </span>हैं, तो आपको <span style="color: red;">⬤</span> इस रंग के स्टिकरवाली बटन को दबाना हैं|   
+      - अगर स्क्रीनपर दिया शब्द <span style="color: green;">‘निळा’ </span>हैं, तो आपको <span style="color: blue;">⬤</span> इस रंग के स्टिकरवाली बटन को दबाना हैं| <br><br>
+        हम शुरू करने से पहले इसका अभ्यास करेंगे <br>
+        आगे बढने के लिए <strong >'Continue'</strong>बटन पर क्लिक करे|<br>
+    </p>
+
+    <h2 class="lang-mr hidden scolor noshow">स्ट्रूप-कलर टास्कमध्ये आपले स्वागत आहे</h2>
+    <p class="lang-mr hidden scolor noshow">
+      या चाचणीत तुम्हाला काही रंगांचे नाव दाखवल्या जातील. तुम्हाला ते नाव कोणत्या रंगात लिहिला आहे हे ओळखून लवकरात लवकर त्या रंगाच्या स्टिकर असलेल्या बटन ला दाबयचं आहे. <br><br>
+    उदाहरण: <br>
+    - जर स्क्रीन वरील शब्द <span style="color: red;">‘लाल’ </span>आहे, तर तुम्हाला <span style="color: red;">⬤</span> या रंगाच्या स्टिकर असलेली बटन दाबायची आहे <br>
+    - जर स्क्रीन वरील शब्द <span style="color: green;">‘निळा’ </span>आहे, तर तुम्हाला <span style="color: green;">⬤</span> या रंगाच्या स्टिकर असलेली बटन दाबायची आहे<br><br>
+      आपण सुरुवात करायच्या आधी सराव करूया <br>
+      पुढे जाण्यासाठी <strong>'Continue'</strong> वर क्लिक करा <br>
+  </p>    
+  
+    <h2 class="lang-mr hidden sword noshow">स्ट्रूप-शब्द टास्कमध्ये आपले स्वागत आहे</h2>
+    <p class="lang-mr hidden sword noshow">
+     या चाचणीत तुम्हाला काही रंगांचे नाव दाखवल्या जातील. तुम्हाला स्क्रीनवर कोणत्या रंगाचं नाव दाखवलं आहे हे ओळखून लवकरात लवकर त्या रंगाच्या स्टिकर असलेल्या बटन ला दाबयचं आहे <br><br>
+    उदाहरण: <br>
+    - जर स्क्रीन वरील शब्द <span style="color: red;">‘लाल’ </span>आहे, तर तुम्हाला <span style="color: red;">⬤</span> या रंगाच्या स्टिकर असलेली बटन दाबायची आहे <br>
+    - जर स्क्रीन वरील शब्द <span style="color: green;">‘निळा’ </span>आहे, तर तुम्हाला <span style="color: blue;">⬤</span> या रंगाच्या स्टिकर असलेली बटन दाबायची आहे<br><br>
+      आपण सुरुवात करायच्या आधी सराव करूया <br>
+      पुढे जाण्यासाठी <strong>'Continue'</strong> वर क्लिक करा <br>
+  </p> 
+
+    <div style="text-align:center;margin-top:8px">
+      <button class="btn primary" id="cntButton"  autofocus>Continue</button>
+    </div>
   </div>
 </div>
 <!-- libs -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://unpkg.com/jspdf@latest/dist/jspdf.umd.min.js"></script>
 <script src="util.js"></script>
 <script src="stroop.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://unpkg.com/jspdf@latest/dist/jspdf.umd.min.js"></script>
 </body>
 </html>

@@ -5,23 +5,9 @@
    - bindings modal for key assignments
    - CSV + PDF report using Chart.js + jsPDF
 */
-function hideInstructions() {
-  $("instructions").style.display = "none";
-//   $("startBtn").style.display = "inline-block";
-  $('subjectId').focus();
-}
+function switchLangStroop(){}
 
-window.addEventListener("load", () => {
-  document.querySelectorAll("#sidebar input, #sidebar select").forEach(el => {
-    if (["subjectId","subjectAge","subjectSex"].includes(el.id)) return; // skip
-    if (localStorage[el.id]) el.value = localStorage[el.id];
-    el.addEventListener("change", () => {
-      if (!["subjectId","subjectAge","subjectSex"].includes(el.id)) {
-        localStorage[el.id] = el.value;
-      }
-    });
-  });
-});
+
 
 // subject fields always blank on refresh
 $('subjectId').value = '';
@@ -31,16 +17,7 @@ $('numColors').value =  '3';
 
 
 (() => {
-  // palette (same as gng-export - choose top N)
-  const ALL_COLORS = [
-    {name:'RED', css:'#ef4444'},
-    {name:'GREEN', css:'#10b981'},
-    {name:'BLUE', css:'#3b82f6'},
-    {name:'YELLOW', css:'#f59e0b'},
-    {name:'PURPLE', css:'#8b5cf6'},
-    {name:'BROWN', css:'#af623a'},
-    {name:'ORANGE', css:'#fb923c'}
-  ];
+
 
   // DOM refs
   const subjectIdEl = $('subjectId');
@@ -73,12 +50,12 @@ $('numColors').value =  '3';
   const rtCanvas = $('rtChart');
   const accCanvas = $('accChart');
   const countsCanvas = $('countsChart');
-  const modernAlert = $('modernAlert');
-  const modernAlertMessage = $('modernAlertMessage');
-  const modeToggle = $("modeToggle");
   const countOverlay = $('countdownOverlay');
   const countNum = $('countdownNum');
-  const  openReport = $('openReport');
+  const openReport = $('openReport');
+  const sideBar = $('sidebar');
+  const trialRunCheckbox = $('trialRunCheckbox');
+  const cntButtotnEl=$('cntButton');
 
   // state
   let bindings = {}; // colorName -> key (lowercase)
@@ -95,6 +72,57 @@ $('numColors').value =  '3';
   let accChart = null;
   let countsChart = null;
   let cachedCsvBlob = null;
+  let isTrialMode = false;
+  let hasTrialRunCompleted = false;
+  const TRIAL_RUN_COUNT = 5;
+
+  let ALL_COLORS = [];
+
+window.addEventListener("load", () => {
+          const testName = "STROOP"; 
+  const excludedIds = ["subjectId", "subjectAge", "subjectSex"];
+    const getStorageKey = (id) => `${testName}_${id}`;
+  document.querySelectorAll("#sidebar input, #sidebar select").forEach(el => {
+        if (excludedIds.includes(el.id)) return; 
+    const storageKey = getStorageKey(el.id);
+            if (localStorage[storageKey]) {
+      el.value = localStorage[storageKey];
+    }
+        el.addEventListener("change", () => {
+      localStorage[storageKey] = el.value;
+    });
+  });
+  $("testLang").addEventListener("change",switchLangStroop());
+    cntButtotnEl.addEventListener("click",hideInstructions);
+});
+
+function switchLangStroop(){
+  const testLangEl = $("testLang");
+  switchLang(testLangEl.value);
+  const scolors= document.getElementsByClassName("scolor");
+  const swords= document.getElementsByClassName("sword");
+  if (respondToEl.value == "word"){
+    for (let el of scolors){
+        el.classList.add('noshow');
+    }
+    for (let el of swords){
+        el.classList.remove('noshow');
+      }
+    }else{
+    for (let el of swords){
+        el.classList.add('noshow');
+    }
+    for (let el of scolors){
+        el.classList.remove('noshow');
+      }
+  }
+ALL_COLORS = generateAllColors(testLangEl.value);
+// loadDefaultBindings();
+// rebuildKeybar();
+// renderBindingsList();
+}
+
+switchLangStroop();
 
   // default bindings loader
   function loadDefaultBindings(n){
@@ -171,8 +199,8 @@ $('numColors').value =  '3';
   }
 
   // generate trials
-  function generateTrials(){
-    const N = Math.max(1, parseInt(numTrialsEl.value,10) || 30);
+  function generateTrials(isPractice=false){
+    const N = isPractice ? TRIAL_RUN_COUNT : (Math.max(1, parseInt(numTrialsEl.value,10) || 30));
     const nColors = Math.max(2, Math.min(ALL_COLORS.length, parseInt(numColorsEl.value,10)));
     const matchPct = parseInt(matchPctEl.value,10);
     const colors = ALL_COLORS.slice(0,nColors);
@@ -201,8 +229,10 @@ $('numColors').value =  '3';
       trialsArr.push({
         idx: i+1,
         word: wordObj.name,
+        wordEng:wordObj.key,
         wordCSS: wordObj.css,
         ink: inkObj.name,
+        inkEng: inkObj.key,
         inkCSS: inkObj.css,
         isMatch,
         angle
@@ -223,21 +253,26 @@ $('numColors').value =  '3';
     stimTimeout = setTimeout(()=>{
       if(awaitingResponse){
         awaitingResponse = false;
+        console.log("is trial mode:",isTrialMode);
+        if(!isTrialMode){
         // omission
         results.push({
           trial: tr.idx,
-          word: tr.word,
-          ink: tr.ink,
+          word: tr.wordEng,
+          ink: tr.inkEng,
           angle: tr.angle,
           keyPressed: '',
           correctKey: bindings[(respondToEl.value === 'color') ? tr.ink : tr.word] || '',
           correct: 0,
           RT: ''
         });
-        // show missed briefly
+        stimWordEl.textContent = '';
+        }else{
+        // show missed briefly feedback
         stimWordEl.textContent = 'Missed';
         stimWordEl.style.color = '#ef4444';
         setTimeout(()=>{ stimWordEl.textContent=''; }, 220);
+        }
         isiTimeout = setTimeout(()=> nextTrial(), parseInt(isiEl.value,10));
       }
     }, parseInt(stimTimeEl.value,10));
@@ -250,13 +285,23 @@ $('numColors').value =  '3';
     stimWordEl.style.transform = 'rotate(0deg)';
     stimWordEl.style.color = 'var(--muted)';
     if(currentIndex >= trials.length){
+      if (isTrialMode) {
+        // Trial is over, wait 2s then start the main test countdown
+        statusEl.textContent = 'Trial complete. Main test will begin shortly.';
+        stimWordEl.textContent = '—';
+        startBtn.disabled = false;
+        sideBar.style.display = 'block';
+        startBtn.focus();
+      } else {
       endTest();
+      }
       return;
     }
     const tr = trials[currentIndex];
     statusEl.textContent = `Trial ${currentIndex+1} / ${trials.length}`;
     // small blank then show
-    setTimeout(()=> showStim(tr), 120);
+    // setTimeout(()=> showStim(tr), 120);//check for error
+    showStim(tr);
   }
 
   // handle response (key press)
@@ -272,20 +317,18 @@ $('numColors').value =  '3';
     const pressedIsCorrect = (key === correctKey);
     // find pressed color(s) if any
     // add result
+    if(!isTrialMode){
     results.push({
       trial: tr.idx,
-      word: tr.word,
-      ink: tr.ink,
+      word: tr.wordEng,
+      ink: tr.inkEng,
       angle: tr.angle,
       keyPressed: key || '',
       correctKey: correctKey || '',
       correct: pressedIsCorrect ? 1 : 0,
       RT: pressedIsCorrect ? rt : rt
     });
-
-    // visual flash on keybar
-    highlightKeyByKey(key);
-
+  }else{
     // feedback effects
     if(pressedIsCorrect){
       stimWordEl.style.boxShadow = '0 8px 40px rgba(16,185,129,0.18)';
@@ -294,6 +337,11 @@ $('numColors').value =  '3';
       beep(400,160);
     }
     setTimeout(()=> stimWordEl.style.boxShadow = '', 160);
+  }
+    // visual flash on keybar
+    //feedback blank
+    stimWordEl.textContent=' ';
+    highlightKeyByKey(key);
 
     // proceed after ISI
     isiTimeout = setTimeout(()=> nextTrial(), parseInt(isiEl.value,10));
@@ -310,6 +358,40 @@ $('numColors').value =  '3';
       }
     });
   }
+
+async function runPracticeSession() {
+    isTrialMode = true;
+    hasTrialRunCompleted = true;
+    sideBar.style.display = 'none';
+    startBtn.disabled = true;
+    stimWordEl.style.fontSize = '120px';
+    statusEl.textContent = 'Preparing trial run...';
+    stimWordEl.textContent = 'TRIAL';
+    await new Promise(r => setTimeout(r, 2000));
+    stimWordEl.style.fontSize = '';
+    trials = generateTrials(true);
+    currentIndex = -1;
+    nextTrial();
+}
+
+function runMainSession() {
+    isTrialMode = false;
+    sideBar.style.display = 'none';
+    results = [];
+    currentIndex = -1;
+    trials = generateTrials();
+    startBtn.disabled = true;
+  // show centered countdown overlay (3..1)
+  let c = 3; countNum.textContent = c; countOverlay.style.display = 'flex';
+  countdownInterval = setInterval(()=> {
+    c--;
+    if(c<=0){
+      clearInterval(countdownInterval); countOverlay.style.display = 'none'; statusEl.textContent='Running...'; nextTrial();
+    } else {
+      countNum.textContent = c;
+    }
+  },1000);
+}
 
   // start test with countdown overlay centered
 let countdownInterval = null;
@@ -330,35 +412,28 @@ let countdownInterval = null;
       openBindings();
       return;
     }
-
-    // reset
-    results = []; currentIndex = -1;
-    trials = generateTrials();
-
-  // show centered countdown overlay (3..1)
-  let c = 3; countNum.textContent = c; countOverlay.style.display = 'flex';
-  countdownInterval = setInterval(()=> {
-    c--;
-    if(c<=0){
-      clearInterval(countdownInterval); countOverlay.style.display = 'none'; statusEl.textContent='Running...'; nextTrial();
+        const wantsTrialRun = trialRunCheckbox.checked;
+    if (wantsTrialRun && !hasTrialRunCompleted) {
+        runPracticeSession();
     } else {
-      countNum.textContent = c;
+        runMainSession();
     }
-  },1000);
+
 }
 
   function endTest(){
     startBtn.disabled = false;
     statusEl.textContent = 'Finished';
     stimWordEl.textContent = '—';
+    sideBar.style.display = 'block';
     // show summary
     showSummary();
     // enable popup/report button
-    // popup.style.display = 'flex'; dont show automatically
+    // popup.style.display = 'flex'; //dont show automatically
     popup.style.alignItems = 'center';
     popup.style.justifyContent = 'center';
     // Render charts
-    // renderCharts(); //dont show automatically
+    renderCharts(); 
     generateCSV();
   }
 
@@ -380,11 +455,6 @@ let countdownInterval = null;
     `;
   }
 
-    // Dark/Light mode toggle
-    modeToggle.addEventListener("click", () => {
-      document.body.classList.toggle("light");
-      modeToggle.textContent = document.body.classList.contains("light") ? "🌞" : "🌙";
-    });
   function generateCSV(){
   const sid = subjectIdEl.value.trim() || 'subject';
     const hdr = ['trial','word','ink','angle','keyPressed','correctKey','correct','RT'];
@@ -621,11 +691,11 @@ async function renderCharts(disableAnimation = false) {
     // --- Data Prep ---
     const mode = respondToEl.value;
     const usedColors = ALL_COLORS.slice(0, parseInt(numColorsEl.value, 10));
-    const colorNames = usedColors.map(c => c.name);
+    const colorNames = usedColors.map(c => c.key);
 
     // --- Chart 2: Accuracy by Color ---
-    const accuracyData = colorNames.map(name => {
-        const colorResults = results.filter(r => ((mode === 'color') ? r.ink : r.word) === name);
+    const accuracyData =  usedColors.map(colorObj => {
+        const colorResults = results.filter(r => ((mode === 'color') ? r.ink : r.word) === colorObj.key);
         const correctCount = colorResults.filter(r => r.correct === 1).length;
         const totalCount = colorResults.length;
         return totalCount > 0 ? Math.round((correctCount / totalCount) * 100) : 0;
@@ -662,12 +732,12 @@ async function renderCharts(disableAnimation = false) {
     // --- Chart 3: Response Counts by Color ---
     const countLabels = ['Correct', 'Omissions', 'Commissions'];
     const colorCountDatasets = usedColors.map(color => {
-        const colorResults = results.filter(r => ((mode === 'color') ? r.ink : r.word) === color.name);
+        const colorResults = results.filter(r => ((mode === 'color') ? r.ink : r.word) === color.key);
         const correctCount = colorResults.filter(r => r.correct === 1).length;
         const commissionCount = colorResults.filter(r => r.correct === 0 && r.keyPressed !== '').length;
         const omissionCount = colorResults.filter(r => r.keyPressed === '').length;
         return {
-            label: color.name,
+            label: color.key,
             data: [correctCount, commissionCount, omissionCount],
             backgroundColor: color.css
         };

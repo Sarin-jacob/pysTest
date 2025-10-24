@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>AX-CPT</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="common.css">
+</head>
+<body>
+<div id="modernAlert"><p id="modernAlertMessage" style="margin:0"></p></div>
+
+<div class="container">
+  <aside id="sidebar" aria-label="Configuration">
+    <h2>Config</h2>
+
+    <label>Subject ID (required)</label>
+    <input id="subjectId" type="text" placeholder="Enter Subject ID">
+
+    <label>Age</label>
+    <input id="subjectAge" type="number" placeholder="Enter Age">
+
+    <label>Sex</label>
+    <select id="subjectSex">
+      <option value="">Select Sex</option><option>Male</option><option>Female</option><option>Other</option>
+    </select>
+
+    <label>Trials</label>
+    <input id="numTrials" type="number" value="30" min="4">
+
+    <details class="advanced-config">
+      <summary>Advanced Config</summary>
+      <div style="padding:8px">
+          <div style="display:inline-flex;width: 100%;justify-content: space-between;align-items: center;">
+          <label>Enable Trial Run</label>
+          <label class="switch">
+              <input id="trialRunCheckbox" type="checkbox" checked>
+              <span class="slider"></span>
+          </label>
+          </div>
+              <hr style="margin:10px 0;border:none;border-top:1px solid var(--input-border)" > 
+    <label>Test Language</label>
+    <select id="testLang">
+      <option value="en">English </option>
+      <option value="mr">Marathi</option>
+      <option value="hi">Hindi</option>
+    </select>
+        <hr style="margin:10px 0;border:none;border-top:1px solid var(--input-border)">
+        <label>STIMULUS_TIME (ms)</label>
+        <input id="stimTime" type="number" value="600">
+        <label>ISI (ms)</label>
+        <input id="isi" type="number" value="500">
+        <label id="axRateLabel">AX Pair Rate (fraction)</label>
+        <input id="axRate" type="number" step="0.01" min="0" max="0.4" value="0.2">
+        <hr style="margin:10px 0;border:none;border-top:1px solid var(--input-border)">
+        <label>Response keys</label>
+        <div style="display:flex;gap:8px">
+          <input id="targetKey" type="text" value="Space" style="margin-bottom: 5px;" placeholder="Target key">
+          <input id="nonTargetKey" type="text" value="N" style="margin-bottom: 5px;" placeholder="Non-target key">
+        </div>
+        <div class="small-note">Press the named key (e.g., Space, Enter, or single letters).</div>
+        <hr style="margin:10px 0;border:none;border-top:1px solid var(--input-border)">
+        <label>Color Mode (toggle)</label>
+        <div style="display:flex;align-items:center;gap:10px">
+          <label class="switch"><input id="colorMode" type="checkbox"><span class="slider"></span></label>
+          <div class="small-note">When ON, letters appear in one of two colors.</div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <div style="flex:1"> <label>Color A (target)</label> <input id="colorA" type="color" value="#3b82f6"> </div>
+          <div style="flex:1"> <label>Color B (distractor)</label> <input id="colorB" type="color" value="#ef4444"> </div>
+        </div>
+        <div style="margin-top:8px">
+          <label><input id="requireAColor" type="checkbox"> Require preceding A to be in Color A for AX to count</label>
+        </div>
+        <hr style="margin:10px 0;border:none;border-top:1px solid var(--input-border)">
+        <label>Extra distractor letters (toggle/select)</label>
+        <div style="display:flex;gap:8px;align-items:center">
+          <label class="switch"><input id="extraLettersToggle" type="checkbox"><span class="slider"></span></label>
+          <div class="small-note">When ON, choose which letters to include as distractors</div>
+        </div>
+        <div id="lettersGrid" class="letters-grid" style="display:none;margin-top:8px">
+          <label><input type="checkbox" class="distractorLetter" value="B" checked> B</label>
+          <label><input type="checkbox" class="distractorLetter" value="C"> C</label>
+          <label><input type="checkbox" class="distractorLetter" value="D"> D</label>
+          <label><input type="checkbox" class="distractorLetter" value="E"> E</label>
+          <label><input type="checkbox" class="distractorLetter" value="F"> F</label>
+          <label><input type="checkbox" class="distractorLetter" value="G"> G</label>
+        </div>
+      </div>
+    </details>
+
+    <div style="margin-top:12px" class="row">
+      <button id="startBtn" class="btn primary">Start Test</button>
+      <button id="resetBtn" class="btn" onclick="location.reload()">Reset</button>
+    </div>
+    <div style="margin-top:12px" class="row">
+      <button id="openReport" class="btn">Open Report</button>
+      <button id="saveDefaults" class="btn">Save Defaults</button>
+    </div>
+  </aside>
+
+  <main id="main">
+    <div id="title">AX-CPT</div>
+    <div class="stage">
+      <div class="statusRow" style="width:100%">
+        <div class="infoBox" id="status">Ready. Configure and press Start Test.</div>
+      <button class="floatbutton" style="right: 50px;font-weight: bolder;" onclick="window.location.href='./index.html';">🏠︎</button>
+      <button id="modeToggle" >🌙</button>
+      </div>
+      <div id="countdownOverlay"><div id="countdownNum">3</div></div>
+      <div class="stimulus cpt" id="stimulus" role="status" aria-live="polite">
+        <div id="stimLetter">—</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button id="targetBtn" class="btn">Target (?)</button>
+        <button id="nonTargetBtn" class="btn">Non-target (?)</button>
+        <div class="muted">You can use the on-screen buttons or press configured keys.</div>
+      </div>
+      <div id="resultsSummary" style="width:100%;max-width:920px;display:none;margin-top:8px"></div>
+    </div>
+  </main>
+</div>
+
+<div id="popup">
+  <div class="popup-card">
+    <h2 style="margin-top:0">AX-CPT Report</h2>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center">
+      <canvas id="rtChart" width="420" height="210"></canvas>
+      <canvas id="perfChart" width="420" height="210"></canvas>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
+      <button id="csvBtn" class="btn">Download CSV</button>
+      <button id="pdfBtn" class="btn">Download PDF</button>
+      <button id="closePopup" class="btn">Close</button>
+    </div>
+  </div>
+</div>
+
+<div id="instructions">
+  <div>
+<h2 class="lang-en hidden">Welcome to the Sequence Task</h2>
+    <p class="lang-en hidden">
+      In this task, you will see a series of letters, one after another.<br>
+      Your goal is to respond <em>only</em> to the letter <b>X</b>, and <em>only</em> if it appears immediately after the letter <b>A</b>.<br><br>
+      - If you see <b>A</b> and <em>then</em> <b>X</b> → press <b>any key</b> when the <b>X</b> appears.<br>
+      - If you see <b>A</b> and <em>then</em> another letter (like <b>Y</b>) → <b>do not press any key</b>.<br>
+      - If you see another letter (like <b>B</b>) and <em>then</em> <b>X</b> → <b>do not press any key</b>.<br><br>
+      Only press for the <b>X</b> in an <b>A-X</b> pair.<br>
+      We will have a practice session before we begin.<br>
+      Press <strong>'Continue'</strong> to proceed.<br>
+    </p>
+
+    <h2 class="lang-mr hidden">सिक्वेन्स टास्कमध्ये आपले स्वागत आहे</h2>
+    <p class="lang-mr hidden">
+      या चाचणीत, तुम्हाला एकामागोमाग एक अक्षरे दिसतील.<br>
+      तुमचे ध्येय <b>फक्त X</b> अक्षरासाठी की दाबणे आहे, आणि <b>फक्त तेव्हाच</b> जेव्हा ते <b>A</b> अक्षरानंतर लगेच येते.<br><br>
+      - जर तुम्हाला <b>A</b> आणि <em>नंतर</em> <b>X</b> दिसले → <b>X</b> दिसल्यावर <b>कोणतीही की</b> दाबा.<br>
+      - जर तुम्हाला <b>A</b> आणि <em>नंतर</em> दुसरे अक्षर (जसे <b>Y</b>) दिसले → <b>कोणतीही की दाबू नका</b>.<br>
+      - जर तुम्हाला दुसरे अक्षर (जसे <b>B</b>) आणि <em>नंतर</em> <b>X</b> दिसले → <b>कोणतीही की दाबू नका</b>.<br><br>
+      फक्त <b>A-X</b> जोडीतील <b>X</b> साठीच की दाबा.<br>
+      सुरुवात करण्यापूर्वी आपण सराव करूया.<br>
+      पुढे जाण्यासाठी <strong>'Continue'</strong> वर क्लिक करा.<br>
+    </p>
+
+    <h2 class="lang-hi hidden">अनुक्रम कार्य में आपका स्वागत है</h2>
+    <p class="lang-hi hidden">
+      इस कार्य में, आपको एक के बाद एक अक्षर दिखाई देंगे।<br>
+      आपका लक्ष्य <b>केवल X</b> अक्षर के लिए बटन दबाना है, और <b>केवल तभी</b> जब वह <b>A</b> अक्षर के ठीक बाद आए।<br><br>
+      - यदि आपको <b>A</b> और <em>फिर</em> <b>X</b> दिखाई दे → <b>X</b> दिखने पर <b>कोई भी बटन</b> दबाएं।<br>
+      - यदि आपको <b>A</b> और <em>फिर</em> कोई अन्य अक्षर (जैसे <b>Y</b>) दिखाई दे → <b>कोई भी बटन न दबाएं</b>।<br>
+      - यदि आपको कोई अन्य अक्षर (जैसे <b>B</b>) और <em>फिर</em> <b>X</b> दिखाई दे → <b>कोई भी बटन न दबाएं</b>।<br><br>
+      केवल <b>A-X</b> जोड़ी में <b>X</b> के लिए ही बटन दबाएं।<br>
+      शुरू करने से पहले हम अभ्यास करेंगे।<br>
+      आगे बढ़ने के लिए <strong>'Continue'</strong> पर क्लिक करें।<br>
+    </p>   
+    <div style="text-align:center;margin-top:8px">
+      <button class="btn primary" id="cntButton"  autofocus>Continue</button>
+    </div>
+  </div>
+</div>
+
+<script src="util.js"></script>
+<script src="cptax.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://unpkg.com/jspdf@latest/dist/jspdf.umd.min.js"></script>
+</body>
+</html>
