@@ -10,7 +10,7 @@ COPY src/package.json .
 RUN npm install
 
 # 2. Copy Source Code
-COPY . .
+COPY /src .
 
 # 3. Prepare Uploads Directory (Permissions for nonroot)
 RUN mkdir -p /app/uploads
@@ -29,7 +29,7 @@ ARG NAME_CACHE=/app/cache/terser-names.json
 ARG RESERVED_NAMES='Chart,jspdf,jsPDF'
 
 # Minify util.js
-RUN npx terser src/public/util.js \
+RUN npx terser public/util.js \
     -c \
     -m reserved=[${RESERVED_NAMES}] \
     --toplevel \
@@ -37,7 +37,7 @@ RUN npx terser src/public/util.js \
     -o public_dist/util.js
 
 # Minify specific JS files
-RUN for f in src/public/cptx.js src/public/cptax.js src/public/gng.js src/public/stroop.js; do \
+RUN for f in public/cptx.js public/cptax.js public/gng.js public/stroop.js; do \
       if [ -f "$f" ]; then \
         OUT_FILE="public_dist/$(basename "$f")"; \
         npx terser "$f" \
@@ -50,13 +50,13 @@ RUN for f in src/public/cptx.js src/public/cptax.js src/public/gng.js src/public
     done
 
 # Minify CSS
-RUN for f in $(find src/public -name '*.css'); do \
+RUN for f in $(find public -name '*.css'); do \
       OUT_FILE="public_dist/$(basename "$f")"; \
       npx clean-css-cli "$f" -o "$OUT_FILE"; \
     done
 
 # Minify HTML
-RUN for f in $(find src/public -name '*.html'); do \
+RUN for f in $(find public -name '*.html'); do \
       OUT_FILE="public_dist/$(basename "$f")"; \
       npx html-minifier-terser "$f" -o "$OUT_FILE" \
         --collapse-whitespace \
