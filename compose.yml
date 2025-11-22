@@ -15,6 +15,7 @@ services:
       # - APP_DOMAIN=example.com
     volumes:
       - psytest_data:/app/uploads
+      #use `docker compose cp psytest:/app/uploads ./uploads` to download data to dir
 
 volumes:
   psytest_data:
