@@ -31,7 +31,7 @@ ARG RESERVED_NAMES='Chart,jspdf,jsPDF'
 # Minify util.js
 RUN npx terser src/public/util.js \
     -c \
-    -m reserved=${RESERVED_NAMES} \
+    -m reserved=[${RESERVED_NAMES}] \
     --toplevel \
     --name-cache ${NAME_CACHE} \
     -o public_dist/util.js
@@ -42,7 +42,7 @@ RUN for f in src/public/cptx.js src/public/cptax.js src/public/gng.js src/public
         OUT_FILE="public_dist/$(basename "$f")"; \
         npx terser "$f" \
           -c \
-          -m reserved=${RESERVED_NAMES} \
+          -m reserved=[${RESERVED_NAMES}] \
           --toplevel \
           --name-cache ${NAME_CACHE} \
           -o "$OUT_FILE"; \
