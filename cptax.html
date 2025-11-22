@@ -55,8 +55,8 @@
         <hr style="margin:10px 0;border:none;border-top:1px solid var(--input-border)">
         <label>Response keys</label>
         <div style="display:flex;gap:8px">
-          <input id="targetKey" type="text" value="Space" style="margin-bottom: 5px;" placeholder="Target key">
-          <input id="nonTargetKey" type="text" value="N" style="margin-bottom: 5px;" placeholder="Non-target key">
+          <input id="targetKey" type="text" value="ArrowRight" style="margin-bottom: 5px;" placeholder="Target key">
+          <input id="nonTargetKey" type="text" value="ArrowLeft" style="margin-bottom: 5px;" placeholder="Non-target key">
         </div>
         <div class="small-note">Press the named key (e.g., Space, Enter, or single letters).</div>
         <hr style="margin:10px 0;border:none;border-top:1px solid var(--input-border)">
@@ -78,13 +78,33 @@
           <label class="switch"><input id="extraLettersToggle" type="checkbox"><span class="slider"></span></label>
           <div class="small-note">When ON, choose which letters to include as distractors</div>
         </div>
-        <div id="lettersGrid" class="letters-grid" style="display:none;margin-top:8px">
+        <div id="lettersGrid"  style="display:none;margin-top:8px">
+        <div class="lang-en letters-grid">
           <label><input type="checkbox" class="distractorLetter" value="B" checked> B</label>
-          <label><input type="checkbox" class="distractorLetter" value="C"> C</label>
-          <label><input type="checkbox" class="distractorLetter" value="D"> D</label>
+          <label><input type="checkbox" class="distractorLetter" value="C" checked> C</label>
+          <label><input type="checkbox" class="distractorLetter" value="D" checked> D</label>
           <label><input type="checkbox" class="distractorLetter" value="E"> E</label>
           <label><input type="checkbox" class="distractorLetter" value="F"> F</label>
           <label><input type="checkbox" class="distractorLetter" value="G"> G</label>
+        </div>
+
+        <div class="lang-hi letters-grid">
+          <label><input type="checkbox" class="distractorLetter" value="प" checked> प</label>
+          <label><input type="checkbox" class="distractorLetter" value="त" checked> त</label>
+          <label><input type="checkbox" class="distractorLetter" value="ट" checked> ट</label>
+          <label><input type="checkbox" class="distractorLetter" value="च"> च</label>
+          <label><input type="checkbox" class="distractorLetter" value="क"> क</label>
+          <label><input type="checkbox" class="distractorLetter" value="र"> र</label>
+        </div>
+
+        <div class="lang-mr letters-grid">
+          <label><input type="checkbox" class="distractorLetter" value="प" checked> प</label>
+          <label><input type="checkbox" class="distractorLetter" value="त" checked> त</label>
+          <label><input type="checkbox" class="distractorLetter" value="ट" checked> ट</label>
+          <label><input type="checkbox" class="distractorLetter" value="च"> च</label>
+          <label><input type="checkbox" class="distractorLetter" value="क"> क</label>
+          <label><input type="checkbox" class="distractorLetter" value="र"> र</label>
+        </div>
         </div>
       </div>
     </details>
@@ -138,41 +158,56 @@
 
 <div id="instructions">
   <div>
-<h2 class="lang-en hidden">Welcome to the Sequence Task</h2>
+    <h2 class="lang-en hidden">Welcome to the CPT AX Task</h2>
     <p class="lang-en hidden">
-      In this task, you will see a series of letters, one after another.<br>
-      Your goal is to respond <em>only</em> to the letter <b>X</b>, and <em>only</em> if it appears immediately after the letter <b>A</b>.<br><br>
-      - If you see <b>A</b> and <em>then</em> <b>X</b> → press <b>any key</b> when the <b>X</b> appears.<br>
-      - If you see <b>A</b> and <em>then</em> another letter (like <b>Y</b>) → <b>do not press any key</b>.<br>
-      - If you see another letter (like <b>B</b>) and <em>then</em> <b>X</b> → <b>do not press any key</b>.<br><br>
-      Only press for the <b>X</b> in an <b>A-X</b> pair.<br>
-      We will have a practice session before we begin.<br>
-      Press <strong>'Continue'</strong> to proceed.<br>
+      You will see letters one after another. Respond to <strong>every letter</strong> using the arrow keys.<br><br>
+      
+      You must press the <strong>Right Arrow Key (→)</strong> <i>only</i> when the sequence is <strong>A</strong> followed by <strong>X</strong> (A + X):<br>
+      
+      &nbsp;&nbsp;&nbsp;&nbsp;<strong>1.</strong> For the preceding <strong>A</strong>, press <strong>Left Arrow (←)</strong>.<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<strong>2.</strong> For the target <strong>X</strong>, press <strong>Right Arrow (→)</strong>.<br><br>
+      
+      <strong>In all other cases</strong> (including all other letters or <strong>X</strong> preceded by a non-A letter), you must press the <strong>Left Arrow Key (←)</strong>.<br><br>
+      
+      Example responses: A, B, C, X, D, B, A, X, C<br>
+      Keys: ←, ←, ←, ←, ←, ←, ←, →, ←<br>
+      
+      Press <strong>'Continue'</strong> to proceed.
     </p>
 
-    <h2 class="lang-mr hidden">सिक्वेन्स टास्कमध्ये आपले स्वागत आहे</h2>
+    <h2 class="lang-mr hidden">सी.पी.टी. अक्षरे टास्कमध्ये आपले स्वागत आहे</h2>
     <p class="lang-mr hidden">
-      या चाचणीत, तुम्हाला एकामागोमाग एक अक्षरे दिसतील.<br>
-      तुमचे ध्येय <b>फक्त X</b> अक्षरासाठी की दाबणे आहे, आणि <b>फक्त तेव्हाच</b> जेव्हा ते <b>A</b> अक्षरानंतर लगेच येते.<br><br>
-      - जर तुम्हाला <b>A</b> आणि <em>नंतर</em> <b>X</b> दिसले → <b>X</b> दिसल्यावर <b>कोणतीही की</b> दाबा.<br>
-      - जर तुम्हाला <b>A</b> आणि <em>नंतर</em> दुसरे अक्षर (जसे <b>Y</b>) दिसले → <b>कोणतीही की दाबू नका</b>.<br>
-      - जर तुम्हाला दुसरे अक्षर (जसे <b>B</b>) आणि <em>नंतर</em> <b>X</b> दिसले → <b>कोणतीही की दाबू नका</b>.<br><br>
-      फक्त <b>A-X</b> जोडीतील <b>X</b> साठीच की दाबा.<br>
-      सुरुवात करण्यापूर्वी आपण सराव करूया.<br>
-      पुढे जाण्यासाठी <strong>'Continue'</strong> वर क्लिक करा.<br>
+      तुम्हाला एकामागोमाग एक अक्षरे दिसतील. बाण बटण वापरून <strong>प्रत्येक अक्षरासाठी</strong> प्रतिसाद देणे अनिवार्य आहे.<br><br>
+      
+      तुम्ही <strong>उजवीकडील बाण बटण (→)</strong> <i>फक्त तेव्हाच</i> दाबावी, जेव्हा अनुक्रम <strong>अ</strong> नंतर <strong>न</strong> येतो (अ + न):<br>
+      
+      &nbsp;&nbsp;&nbsp;&nbsp;<strong>1.</strong> त्यापूर्वी आलेल्या <strong>अ</strong> साठी, <strong>डावीकडील बाण (←)</strong> दाबा.<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<strong>2.</strong> लक्ष्य <strong>न</strong> साठी, <strong>उजवीकडील बाण (→)</strong> दाबा.<br><br>
+      
+      <strong>इतर सर्व प्रकरणांमध्ये</strong> (ज्यात इतर सर्व अक्षरे आणि अ-व्यतिरिक्त अक्षरानंतर आलेले <strong>न</strong> समाविष्ट आहे), तुम्हाला <strong>डावीकडील बाण की (←)</strong> दाबावी लागेल.<br><br>
+      
+      उदाहरणासह प्रतिसाद: अ, प, क, न, ड, प, अ, न, क<br>
+      बटण: ←, ←, ←, ←, ←, ←, ←, →, ←<br>
+      
+      पुढे जाण्यासाठी <strong>'Continue'</strong> वर क्लिक करा.
     </p>
 
-    <h2 class="lang-hi hidden">अनुक्रम कार्य में आपका स्वागत है</h2>
+    <h2 class="lang-hi hidden">सीपीटी एएक्स कार्य में आपका स्वागत है</h2>
     <p class="lang-hi hidden">
-      इस कार्य में, आपको एक के बाद एक अक्षर दिखाई देंगे।<br>
-      आपका लक्ष्य <b>केवल X</b> अक्षर के लिए बटन दबाना है, और <b>केवल तभी</b> जब वह <b>A</b> अक्षर के ठीक बाद आए।<br><br>
-      - यदि आपको <b>A</b> और <em>फिर</em> <b>X</b> दिखाई दे → <b>X</b> दिखने पर <b>कोई भी बटन</b> दबाएं।<br>
-      - यदि आपको <b>A</b> और <em>फिर</em> कोई अन्य अक्षर (जैसे <b>Y</b>) दिखाई दे → <b>कोई भी बटन न दबाएं</b>।<br>
-      - यदि आपको कोई अन्य अक्षर (जैसे <b>B</b>) और <em>फिर</em> <b>X</b> दिखाई दे → <b>कोई भी बटन न दबाएं</b>।<br><br>
-      केवल <b>A-X</b> जोड़ी में <b>X</b> के लिए ही बटन दबाएं।<br>
-      शुरू करने से पहले हम अभ्यास करेंगे।<br>
-      आगे बढ़ने के लिए <strong>'Continue'</strong> पर क्लिक करें।<br>
-    </p>   
+      आपको एक के बाद एक अक्षर दिखाई देंगे। तीर बटन का उपयोग करके <strong>प्रत्येक अक्षर</strong> के लिए प्रतिक्रिया देना अनिवार्य है।<br><br>
+      
+      आपको <strong>दायाँ तीर बटन (→)</strong> <i>केवल तभी</i> दबाना होगा, जब अनुक्रम <strong>अ</strong> के बाद <strong>न</strong> आए (अ + न):<br>
+      
+      &nbsp;&nbsp;&nbsp;&nbsp;<strong>1.</strong> पहले आए <strong>अ</strong> के लिए, <strong>बायाँ तीर (←)</strong> दबाएं।<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<strong>2.</strong> लक्ष्य <strong>न</strong> के लिए, <strong>दायाँ तीर बटन (→)</strong> दबाएं।<br><br>
+      
+      <strong>अन्य सभी मामलों में</strong> (जिसमें अन्य सभी अक्षर और अ-के अलावा किसी अन्य अक्षर के बाद आया <strong>न</strong> शामिल है), आपको <strong>बायाँ तीर बटन (←)</strong> दबाना होगा।<br><br>
+      
+      उदाहरण प्रतिक्रियाएं: अ, प, क, न, ड, प, अ, न, क<br>
+      बटन: ←, ←, ←, ←, ←, ←, ←, →, ←<br>
+      
+      आगे बढ़ने के लिए <strong>'Continue'</strong> पर क्लिक करें.
+    </p>  
     <div style="text-align:center;margin-top:8px">
       <button class="btn primary" id="cntButton"  autofocus>Continue</button>
     </div>

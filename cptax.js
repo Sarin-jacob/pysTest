@@ -13,7 +13,7 @@ const popup = $('popup'), closePopup = $('closePopup'), csvBtn = $('csvBtn'), pd
 const rtCanvas = $('rtChart'), perfCanvas = $('perfChart'),cntButtotnEl=$('cntButton');
 const countOverlay = $('countdownOverlay'), countNum = $('countdownNum'), sideBar = $('sidebar');
 const targetBtn = $('targetBtn'), nonTargetBtn = $('nonTargetBtn');
-const trialRunCheckbox = $('trialRunCheckbox');
+const trialRunCheckbox = $('trialRunCheckbox'),testLangEl=$('testLang');
 
 let trials = [], currentIndex = -1, awaiting = false, stimShownAt = 0;
 let stimTimeout = null, isiTimeout = null;
@@ -24,13 +24,14 @@ let isTrialMode = false;
 let hasTrialRunCompleted = false;
 const TRIAL_RUN_COUNT = 10;
 const PLUS_TIME=350;
+let A,X;
 
 window.addEventListener("load", () => {
           const testName = "CPTAX"; 
   const excludedIds = ["subjectId", "subjectAge", "subjectSex"];
     const getStorageKey = (id) => `${testName}_${id}`;
   document.querySelectorAll("#sidebar input, #sidebar select").forEach(el => {
-        if (excludedIds.includes(el.id)) return; 
+        if (excludedIds.includes(el.id)|| el.id=='') return; 
     const storageKey = getStorageKey(el.id);
             if (localStorage[storageKey]) {
       el.value = localStorage[storageKey];
@@ -39,10 +40,16 @@ window.addEventListener("load", () => {
       localStorage[storageKey] = el.value;
     });
   });
+updateKeyLabels();
+switchLang(testLangEl.value);
+A =testLangEl.value=='en'?'A':'अ';
+X =testLangEl.value=='en'?'X':'न';
 });
 
 updateKeyLabels();
-switchLang($("testLang").value);
+switchLang(testLangEl.value);
+A =testLangEl.value=='en'?'A':'अ';
+X =testLangEl.value=='en'?'X':'न';
 window.addEventListener('load', ()=>{
   subjectIdEl.value=''; subjectAgeEl.value=''; subjectSexEl.value='';
   extraLettersToggle.addEventListener('change', ()=> lettersGrid.style.display = extraLettersToggle.checked ? 'grid' : 'none');
@@ -58,7 +65,7 @@ window.addEventListener('load', ()=>{
   document.addEventListener('keydown', handleKeyDown);
   targetKeyEl.addEventListener('input', updateKeyLabels);
   nonTargetKeyEl.addEventListener('input', updateKeyLabels);
-  $("testLang").addEventListener("change",switchLang($("testLang").value));
+  testLangEl.addEventListener("change",()=>{switchLang(testLangEl.value);X =testLangEl.value=='en'?'X':'न';A =testLangEl.value=='en'?'A':'अ';});
   cntButtotnEl.addEventListener("click",hideInstructions);
 });
 
@@ -80,18 +87,15 @@ function keyMatchesEvent(e, name){
 }
 
 function getDistractorLetters(){
-  let set = ['B'];
-  if(extraLettersToggle.checked){
-    document.querySelectorAll('.distractorLetter').forEach(ch => { if(ch.checked && !set.includes(ch.value)) set.push(ch.value); });
-  }
+  let set = (testLangEl.value=='en')?['B']:['प'];
+  document.querySelectorAll('.distractorLetter').forEach(ch => { if(ch.checked && !set.includes(ch.value) && !ch.parentElement.parentElement.classList.contains('hidden')) set.push(ch.value); });
   return Array.from(new Set(set)).slice(0,6);
 }
 
 function generateTrials(isPractice = false){
   const N = isPractice ? TRIAL_RUN_COUNT : (Math.max(1, parseInt(numTrialsEl.value,10) || 30));
   const axRate = Math.max(0, Math.min(0.4, parseFloat(axRateEl.value || 0.2)));
-  const distractors = getDistractorLetters();
-  const pool = distractors.concat(['Y','Z','M','T']).slice(0,8);
+  const pool = getDistractorLetters();
   let arr = new Array(N).fill(null).map(()=>({ letter: pool[Math.floor(Math.random()*pool.length)], expected:false, color:null }));
 
   let pairs = Math.floor(N * axRate);
@@ -102,27 +106,27 @@ function generateTrials(isPractice = false){
     attempts++;
     const pos = Math.floor(Math.random()*(N-1));
     if(taken.has(pos) || taken.has(pos+1)) continue;
-    arr[pos].letter = 'A'; arr[pos].expected = false;
-    arr[pos+1].letter = 'X';
+    arr[pos].letter = A; arr[pos].expected = false;
+    arr[pos+1].letter = X;
     taken.add(pos); taken.add(pos+1);
     placed++;
   }
 
   for(let i=0;i<N;i++){
-    if(arr[i].letter === 'X' && i>0 && arr[i-1].letter === 'A') arr[i].expected = true;
+    if(arr[i].letter === X && i>0 && arr[i-1].letter === A) arr[i].expected = true;
     else arr[i].expected = false;
   }
 
   if(colorModeEl.checked){
     for(let i=0;i<arr.length;i++){
-      arr[i].color = Math.random() < 0.5 ? 'A' : 'B';
+      arr[i].color = Math.random() < 0.5 ? '1' : '2';
     }
     if(requireAColorEl.checked){
       for(let i=0;i<arr.length;i++){
-        if(arr[i].letter === 'X' && i>0 && arr[i-1].letter === 'A' && arr[i-1].color === 'A'){
+        if(arr[i].letter === X && i>0 && arr[i-1].letter === A && arr[i-1].color === '1'){
           arr[i].expected = true;
         } else {
-          if(arr[i].letter === 'X') arr[i].expected = false;
+          if(arr[i].letter === X) arr[i].expected = false;
         }
       }
     }
@@ -132,8 +136,8 @@ function generateTrials(isPractice = false){
   if(isPractice){ //check later for error
     const hasTarget = arr.some(t => t.expected);
     if(!hasTarget){
-      arr[0].letter = 'A'; arr[0].color = 'A';
-      arr[1].letter = 'X'; arr[1].expected = true; arr[1].color = 'A';
+      arr[0].letter = A; arr[0].color = '1';
+      arr[1].letter = X; arr[1].expected = true; arr[1].color = '1';
     }
   }
   return arr.map((t,i) => ({ idx:i+1, letter:t.letter, expected:!!t.expected, color:t.color }));
@@ -217,8 +221,8 @@ function nextTrial(){
   stimDiv.style.fontWeight='';
   const tr = trials[currentIndex];
   stimDiv.textContent = tr.letter;
-  if(tr.color === 'A') stimDiv.style.color = colorAEl.value;
-  else if(tr.color === 'B') stimDiv.style.color = colorBEl.value;
+  if(tr.color === '1') stimDiv.style.color = colorAEl.value;
+  else if(tr.color === '2') stimDiv.style.color = colorBEl.value;
   else stimDiv.style.color = '';
   statusEl.textContent = `Trial ${currentIndex+1} / ${trials.length}`;
   awaiting = true;
@@ -255,8 +259,8 @@ function nextTrial(){
 
 function handleKeyDown(e){
   if(popup.style.display === 'flex' || countOverlay.style.display === 'flex' || !awaiting) return;
-  const targetKeyName = normKeyName(targetKeyEl.value || 'Space');
-  const nonTargetKeyName = normKeyName(nonTargetKeyEl.value || 'N');
+  const targetKeyName = normKeyName(targetKeyEl.value || 'ArrowRight');
+  const nonTargetKeyName = normKeyName(nonTargetKeyEl.value || 'ArrowLeft');
   if(keyMatchesEvent(e, targetKeyName)) { processResponse('target'); e.preventDefault(); }
   else if(keyMatchesEvent(e, nonTargetKeyName)) { processResponse('nontarget'); e.preventDefault(); }
 }

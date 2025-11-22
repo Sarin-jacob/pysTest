@@ -1,4 +1,4 @@
-// CPT (Target 'X') implementation
+// CPT (Target X) implementation
 
 // DOM refs
 const subjectIdEl = $('subjectId'), subjectAgeEl = $('subjectAge'), subjectSexEl = $('subjectSex');
@@ -11,7 +11,7 @@ const popup = $('popup'), closePopup = $('closePopup'), csvBtn = $('csvBtn'), pd
 const rtCanvas = $('rtChart'), perfCanvas = $('perfChart');
 const countOverlay = $('countdownOverlay'), countNum = $('countdownNum'), sideBar = $('sidebar');
 const targetBtn = $('targetBtn'), cntButtotnEl=$('cntButton');
-const trialRunCheckbox = $('trialRunCheckbox');
+const trialRunCheckbox = $('trialRunCheckbox'),testLangEl=$('testLang');
 
 let trials = [], currentIndex = -1, awaiting = false, stimShownAt = 0;
 let stimTimeout = null, isiTimeout = null;
@@ -22,6 +22,7 @@ let isTrialMode = false;
 let hasTrialRunCompleted = false;
 const TRIAL_RUN_COUNT = 5;
 const PLUS_TIME=350;
+let X;
 
 window.addEventListener("load", () => {
           const testName = "CPTX"; 
@@ -37,10 +38,14 @@ window.addEventListener("load", () => {
       localStorage[storageKey] = el.value;
     });
   });
+X =testLangEl.value=='en'?'X':'न';
+updateKeyLabels();
+switchLang(testLangEl.value);
 });
 
+X =testLangEl.value=='en'?'X':'न';
 updateKeyLabels();
-switchLang($("testLang").value);
+switchLang(testLangEl.value);
 
 window.addEventListener('load', ()=>{
   subjectIdEl.value=''; subjectAgeEl.value=''; subjectSexEl.value='';
@@ -54,7 +59,7 @@ window.addEventListener('load', ()=>{
   targetBtn.addEventListener('click', ()=> simulateKey('target'));
   document.addEventListener('keydown', handleKeyDown);
   targetKeyEl.addEventListener('input', updateKeyLabels);
-  $("testLang").addEventListener("change",switchLang($("testLang").value));
+  testLangEl.addEventListener("change",()=>{switchLang(testLangEl.value);X = testLangEl.value=='en'?'X':'न';});
   cntButtotnEl.addEventListener("click",hideInstructions);
 });
 
@@ -78,11 +83,11 @@ function keyMatchesEvent(e, name){
 function generateTrials(isPractice = false){
   const N = isPractice ? TRIAL_RUN_COUNT : (Math.max(1, parseInt(numTrialsEl.value,10) || 30));
   const goProb = Math.max(0, Math.min(1, parseFloat(goProbEl.value || 0.4)));
-  const pool = ['B','C','D','F','G','H','J','K','L'];
+  const pool = (testLangEl.value=='en')?['B','C','D','F','G','H','J','K','L']:['ट','ठ','ड','च','य','र','ग','घ','क'];
   let arr = [];
   for(let i=0; i<N; i++){
     if(Math.random() < goProb){
-      arr.push({ letter: 'X', expected: true });
+      arr.push({ letter: X, expected: true });
     } else {
       arr.push({ letter: pool[Math.floor(Math.random()*pool.length)], expected: false });
     }
@@ -90,7 +95,7 @@ function generateTrials(isPractice = false){
   if (isPractice) {
     const hasTarget = arr.some(t => t.expected);
     if (!hasTarget && N > 2) {
-      arr[2] = { letter: 'X', expected: true }; // Force a target on the 3rd trial
+      arr[2] = { letter: X, expected: true }; // Force a target on the 3rd trial
     }
   }
   return arr.map((t,i) => ({ idx:i+1, letter:t.letter, expected:!!t.expected }));
