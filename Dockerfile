@@ -1,95 +1,99 @@
-ARG PYTHON_VERSION=3.11
-
 # ==================================================================
-# Stage 1: 'builder' - Install Python dependencies
+# Stage 1: 'builder' - Install deps, Build and Minify
 # ==================================================================
-FROM python:${PYTHON_VERSION}-slim AS builder
+FROM node:20-slim AS builder
 
 WORKDIR /app
 
-RUN pip install --upgrade pip
-COPY ./src/requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# 1. Install App Dependencies
+COPY package.json .
+RUN npm install
 
-COPY ./src /app
-RUN mkdir -p /app/uploads && chown -R 65532:65532 /app/uploads
+# 2. Copy Source Code
+COPY . .
 
+# 3. Prepare Uploads Directory (Permissions for nonroot)
+RUN mkdir -p /app/uploads
 
-# ==================================================================
-# Stage 2: 'minifier' - Build and minify static assets
-# ==================================================================
-FROM node:20-slim AS minifier
+# 4. Prepare Output Directory for Public Assets
+# We assume source assets are in ./src/public (based on your original Dockerfile structure)
+# But standard Node apps usually have them in ./public. 
+# Adjusting to match your original input: ./src/public -> ./public_dist
+RUN mkdir -p /app/public_dist
+RUN mkdir -p /app/cache
 
-WORKDIR /build
+# --- ASSET MINIFICATION (Replicating Logic) ---
+# We use npx to run the devDependencies installed in package.json
 
-RUN npm init -y && \
-    npm install terser html-minifier clean-css-cli
+ARG NAME_CACHE=/app/cache/terser-names.json
+ARG RESERVED_NAMES='Chart,jspdf,jsPDF'
 
-COPY --from=builder /app/public /build/public_src
-
-RUN mkdir -p /build/public_dist
-RUN mkdir -p /build/cache # To store the name cache
-
-# --- JS MINIFICATION (with Reserved Names and Cache) ---
-
-ARG NAME_CACHE=/build/cache/terser-names.json
-
-ARG RESERVED_NAMES=['Chart','jspdf','jsPDF']
-
-RUN npx terser public_src/util.js \
+# Minify util.js
+RUN npx terser src/public/util.js \
     -c \
-    -m \
-    reserved=${RESERVED_NAMES} \
+    -m reserved=${RESERVED_NAMES} \
     --toplevel \
     --name-cache ${NAME_CACHE} \
     -o public_dist/util.js
 
-RUN for f in public_src/cptx.js public_src/cptax.js public_src/gng.js public_src/stroop.js; do \
-      OUT_FILE="public_dist/$(basename "$f")"; \
-      npx terser "$f" \
-        -c \
-        -m reserved=${RESERVED_NAMES} \
-        --toplevel \
-        --name-cache ${NAME_CACHE} \
-        -o "$OUT_FILE"; \
+# Minify specific JS files
+RUN for f in src/public/cptx.js src/public/cptax.js src/public/gng.js src/public/stroop.js; do \
+      if [ -f "$f" ]; then \
+        OUT_FILE="public_dist/$(basename "$f")"; \
+        npx terser "$f" \
+          -c \
+          -m reserved=${RESERVED_NAMES} \
+          --toplevel \
+          --name-cache ${NAME_CACHE} \
+          -o "$OUT_FILE"; \
+      fi \
     done
 
-# --- END JS MINIFICATION ---
-
-
-RUN for f in $(find public_src -name '*.css'); do \
+# Minify CSS
+RUN for f in $(find src/public -name '*.css'); do \
       OUT_FILE="public_dist/$(basename "$f")"; \
       npx clean-css-cli "$f" -o "$OUT_FILE"; \
     done
 
-RUN for f in $(find public_src -name '*.html'); do \
+# Minify HTML
+RUN for f in $(find src/public -name '*.html'); do \
       OUT_FILE="public_dist/$(basename "$f")"; \
-      npx html-minifier "$f" -o "$OUT_FILE" \
+      npx html-minifier-terser "$f" -o "$OUT_FILE" \
         --collapse-whitespace \
         --remove-comments \
         --minify-js true \
         --minify-css true; \
     done
 
+# Prune dev dependencies for production image size
+RUN npm prune --production
 
 # ==================================================================
-# Stage 3: 'final' -  distroless image
+# Stage 2: 'final' - Distroless Node Image
 # ==================================================================
-FROM gcr.io/distroless/python3-debian12:nonroot
+FROM gcr.io/distroless/nodejs20-debian12:nonroot
 USER nonroot
-ARG PYTHON_VERSION=3.11
 
 WORKDIR /app
 
-COPY --from=builder /usr/local/lib/python${PYTHON_VERSION}/site-packages /usr/local/lib/python${PYTHON_VERSION}/site-packages
-COPY --from=builder /usr/local/bin /usr/local/bin
+# Copy node_modules (production only)
+COPY --from=builder /app/node_modules /app/node_modules
 
-COPY --from=builder --chown=65532:65532 /app/app.py /app/app.py
+# Copy Server Code
+COPY --from=builder /app/server.js /app/server.js
+COPY --from=builder /app/package.json /app/package.json
+
+# Copy Uploads folder (with correct ownership from builder)
 COPY --from=builder --chown=65532:65532 /app/uploads /app/uploads
-COPY --from=minifier --chown=65532:65532 /build/public_dist /app/public
 
-ENV PYTHONPATH=/usr/local/lib/python${PYTHON_VERSION}/site-packages
+# Copy Minified Public Assets
+# We rename public_dist to public so server.js finds them easily
+COPY --from=builder --chown=65532:65532 /app/public_dist /app/public
+
+# Set Environment
+ENV NODE_ENV=production
 
 EXPOSE 8080
 
-CMD ["/usr/local/bin/gunicorn", "-w", "4", "-b", "0.0.0.0:8080", "app:app"]
+# Distroless nodejs entrypoint is implicit "node", so we just pass the file
+CMD ["server.js"]
