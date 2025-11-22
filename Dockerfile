@@ -6,7 +6,7 @@ FROM node:20-slim AS builder
 WORKDIR /app
 
 # 1. Install App Dependencies
-COPY package.json .
+COPY src/package.json .
 RUN npm install
 
 # 2. Copy Source Code
