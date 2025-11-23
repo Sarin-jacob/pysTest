@@ -17,8 +17,24 @@ const ALLOWED_EXTENSIONS = ['csv'];
 const app = express();
 
 // Add basic security headers (similar to what production Flask needs)
-app.use(helmet());
-
+// app.use(helmet());
+app.use(helmet({
+        contentSecurityPolicy: {
+            useDefaults: true,
+            directives: {
+                "default-src": ["'self'"],
+                // "upgrade-insecure-requests": null,
+                "script-src": [
+                    "'self'", 
+                    "https://cdn.jsdelivr.net", 
+                    "https://unpkg.com", 
+                    "'unsafe-inline'",  // Allows inline <script> tags and event handlers
+                    // "'unsafe-eval'"     // Occasionally needed by some older chart libraries/minifiers
+                ],
+                "img-src": ["'self'", "data:", "blob:"], // Allows generated charts/images
+            },
+        },
+    }));
 // Ensure upload directory exists
 if (!fs.existsSync(UPLOAD_FOLDER)) {
     fs.mkdirSync(UPLOAD_FOLDER, { recursive: true });
