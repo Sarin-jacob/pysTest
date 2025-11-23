@@ -143,7 +143,7 @@ app.post(`${BASE_URL}/api/upload`, (req, res) => {
 
         return res.status(201).json({
             status: "success",
-            message: f`File '${req.file.filename}' uploaded successfully.` // Note: using template literal syntax
+            message: `File '${req.file.filename}' uploaded successfully.` // Note: using template literal syntax
         });
     });
 });
