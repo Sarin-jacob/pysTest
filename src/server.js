@@ -31,6 +31,7 @@ app.use(helmet({
                     "'unsafe-inline'",  // Allows inline <script> tags and event handlers
                     // "'unsafe-eval'"     // Occasionally needed by some older chart libraries/minifiers
                 ],
+                "script-src-attr": ["'unsafe-inline'"],
                 "img-src": ["'self'", "data:", "blob:"], // Allows generated charts/images
             },
         },
