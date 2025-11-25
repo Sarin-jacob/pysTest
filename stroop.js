@@ -77,10 +77,13 @@ $('numColors').value =  '3';
   const TRIAL_RUN_COUNT = 5;
 
   let ALL_COLORS = [];
-
+  const softReset=localStorage.getItem("softReset")==!null;
 window.addEventListener("load", () => {
-          const testName = "STROOP"; 
-  const excludedIds = ["subjectId", "subjectAge", "subjectSex"];
+  const testName = "STROOP"; 
+  let excludedIds = ["subjectId", "subjectAge", "subjectSex"];
+  if (softReset) {
+    excludedIds=[];
+  }
     const getStorageKey = (id) => `${testName}_${id}`;
   document.querySelectorAll("#sidebar input, #sidebar select").forEach(el => {
         if (excludedIds.includes(el.id)) return; 
@@ -94,6 +97,7 @@ window.addEventListener("load", () => {
   });
   $("testLang").addEventListener("change",switchLangStroop());
     cntButtotnEl.addEventListener("click",hideInstructions);
+  localStorage.removeItem("softReset");
 });
 
 function switchLangStroop(){
@@ -798,6 +802,11 @@ async function renderCharts(disableAnimation = false) {
           }
         }
       }
+      return;
+    }
+    if(ev.key === 'Escape'){
+      localStorage.setItem('softReset','1');
+      location.reload();
       return;
     }
     // if bindings modal open and not capturing - ignore test keys
