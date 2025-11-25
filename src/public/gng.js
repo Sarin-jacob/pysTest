@@ -11,9 +11,14 @@ const rtCanvas = $('rtChart'), perfCanvas = $('perfChart'), cntButtotnEl=$('cntB
 const instructionsDiv = $('instructions'), trialRunCheckbox = $('trialRunCheckbox');
 const countdownOverlay = $('countdownOverlay'), countdownNum = $('countdownNum');
 
+const softReset=localStorage.getItem("softReset")==!null;
+
 window.addEventListener("load", () => {
-          const testName = "GNG"; 
-  const excludedIds = ["subjectId", "subjectAge", "subjectSex"];
+  const testName = "GNG"; 
+  let  excludedIds = ["subjectId", "subjectAge", "subjectSex"];
+  if (softReset) {
+    excludedIds=[];
+  }
     const getStorageKey = (id) => `${testName}_${id}`;
   document.querySelectorAll("#sidebar input, #sidebar select").forEach(el => {
         if (excludedIds.includes(el.id)) return; 
@@ -25,6 +30,7 @@ window.addEventListener("load", () => {
       localStorage[storageKey] = el.value;
     });
   });
+  localStorage.removeItem("softReset");
 });
 
 switchLang($("testLang").value);
@@ -195,6 +201,11 @@ function showStimulus(isGo) {
 }
 
 function handleKeydown(e) {
+      if(e.key === 'Escape'){
+      localStorage.setItem('softReset','1');
+      location.reload();
+      return;
+    }
   if (!stimulusOnset || !trialActive || responseMade) return;
   responseMade = true;
   trialActive = false;
