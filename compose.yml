@@ -9,7 +9,7 @@ services:
 #    ports:
 #      - "8080:8080"
     environment:
-      - APP_BASE_URL=/psytest
+      # - APP_BASE_URL=/psytest
       - APP_MAX_FILE_SIZE_MB=1 # Example: Set max file size to 1 MB
       # - APP_UPLOAD_FOLDER=/app/uploads
       # - APP_DOMAIN=example.com
