@@ -17,19 +17,19 @@
   <aside id="sidebar" aria-label="Configuration">
     <h2>Config</h2>
 
-    <label>Subject ID (required)</label>
+    <label for="subjectId">Subject ID (required)</label>
     <input id="subjectId" type="text" placeholder="Enter Subject ID">
 
-    <label>Age</label>
+    <label for="subjectAge">Age</label>
     <input id="subjectAge" type="number" placeholder="Enter Age">
 
-    <label>Sex</label>
+    <label for="subjectSex">Sex</label>
     <select id="subjectSex">
       <option value="">Select Sex</option>
       <option>Male</option><option>Female</option><option>Other</option>
     </select>
 
-    <label>Trials</label>
+    <label for="numTrials">Trials</label>
     <input id="numTrials" type="number" value="30" min="4">
 
     <details class="advanced-config">
@@ -43,18 +43,18 @@
           </label>
           </div>
               <hr style="margin:10px 0;border:none;border-top:1px solid var(--input-border)" > 
-    <label>Test Language</label>
+    <label for="testLang">Test Language</label>
     <select id="testLang">
       <option value="en">English </option>
       <option value="mr">Marathi</option>
       <option value="hi">Hindi</option>
     </select>
         <hr style="margin:10px 0;border:none;border-top:1px solid var(--input-border)">
-        <label>STIMULUS_TIME (ms)</label>
+        <label for="stimTime">STIMULUS_TIME (ms)</label>
         <input id="stimTime" type="number" value="1500">
-        <label>ISI (ms)</label>
+        <label for="isi">ISI (ms)</label>
         <input id="isi" type="number" value="800">
-        <label>Number of colors</label>
+        <label for="numColors">Number of colors</label>
         <select id="numColors">
           <option value="2">2</option>
           <option value="3" selected>3</option>
@@ -62,13 +62,13 @@
           <option value="5">5</option>
           <option value="6">6</option>
         </select>
-        <label>Match % (word == ink)</label>
+        <label for="matchPct">Match % (word == ink)</label>
         <input id="matchPct" type="range" min="0" max="100" value="50">
         <div class="muted" style="margin-top:4px">Match: <span id="matchPctLabel">50%</span></div>
       </div>
     </details>
 
-    <label>Respond To</label>
+    <label for="respondTo">Respond To</label>
     <select id="respondTo">
       <option value="color">Color (ink)</option>
       <option value="word">Word (text)</option>
@@ -76,7 +76,7 @@
 
 
 
-    <label>Orientation (multiples of 45°)</label>
+    <label for="orientation">Orientation (multiples of 45°)</label>
     <select id="orientation">
       <option value="0" selected>0°</option>
       <option value="45">45°</option>
