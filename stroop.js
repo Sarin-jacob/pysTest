@@ -117,9 +117,9 @@ function switchLangStroop(){
       }
   }
 ALL_COLORS = generateAllColors(testLangEl.value);
-// loadDefaultBindings();
-// rebuildKeybar();
-// renderBindingsList();
+loadDefaultBindings();
+rebuildKeybar();
+renderBindingsList();
 }
 
 switchLangStroop();
