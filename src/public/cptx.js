@@ -24,9 +24,9 @@ const TRIAL_RUN_COUNT = 5;
 const PLUS_TIME=350;
 let X;
 const softReset=localStorage.getItem("softReset")==!null;
+const testName = "CPTX"; 
 
 window.addEventListener("load", () => {
-  const testName = "CPTX"; 
   let excludedIds = ["subjectId", "subjectAge", "subjectSex"];
   if (softReset) {
     excludedIds = [];
@@ -53,7 +53,7 @@ updateKeyLabels();
 switchLang(testLangEl.value);
 
 window.addEventListener('load', ()=>{
-  subjectIdEl.value=''; subjectAgeEl.value=''; subjectSexEl.value='';
+  if(!softReset) {subjectIdEl.value=''; subjectAgeEl.value=''; subjectSexEl.value='';}
   startBtn.addEventListener('click', startTest);
   resetBtn.addEventListener('click', resetAll);
   openReport.addEventListener('click', ()=> { if(results.length===0) showAlert('No results yet — run a test first'); else { popup.style.display='flex'; renderCharts(); }});
@@ -220,6 +220,9 @@ function nextTrial(){
 
 function handleKeyDown(e){
         if(e.key === 'Escape'){
+      localStorage.setItem(`${testName}_${subjectIdEl.id}`,subjectIdEl.value);
+      localStorage.setItem(`${testName}_${subjectSexEl.id}`,subjectSexEl.value);
+      localStorage.setItem(`${testName}_${subjectAgeEl.id}`,subjectAgeEl.value);
       localStorage.setItem('softReset','1');
       location.reload();
       return;
