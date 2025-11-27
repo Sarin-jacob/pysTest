@@ -12,9 +12,9 @@ const instructionsDiv = $('instructions'), trialRunCheckbox = $('trialRunCheckbo
 const countdownOverlay = $('countdownOverlay'), countdownNum = $('countdownNum');
 
 const softReset=localStorage.getItem("softReset")==!null;
+const testName = "GNG"; 
 
 window.addEventListener("load", () => {
-  const testName = "GNG"; 
   let  excludedIds = ["subjectId", "subjectAge", "subjectSex"];
   if (softReset) {
     excludedIds=[];
@@ -47,12 +47,11 @@ let countdownInterval;
 let trialLogs = [];
 let trialActive = false;
 let rtChart, perfChart;
-const testName = "GoNoGo";
 const PLUS_TIME=350;
 
 // Initial setup
 window.addEventListener('load', () => {
-    subjectIdEl.value = ''; subjectAgeEl.value = ''; subjectSexEl.value = '';
+    if(!softReset) {subjectIdEl.value=''; subjectAgeEl.value=''; subjectSexEl.value='';}
     cntButtotnEl.addEventListener("click",hideInstructions);
     startBtn.addEventListener("click", startTest);
     showReportBtn.addEventListener("click", showReport);
@@ -202,6 +201,9 @@ function showStimulus(isGo) {
 
 function handleKeydown(e) {
       if(e.key === 'Escape'){
+      localStorage.setItem(`${testName}_${subjectIdEl.id}`,subjectIdEl.value);
+      localStorage.setItem(`${testName}_${subjectSexEl.id}`,subjectSexEl.value);
+      localStorage.setItem(`${testName}_${subjectAgeEl.id}`,subjectAgeEl.value);
       localStorage.setItem('softReset','1');
       location.reload();
       return;

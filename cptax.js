@@ -27,9 +27,9 @@ const PLUS_TIME=350;
 let A,X;
 
 const softReset=localStorage.getItem("softReset")==!null;
+const testName = "CPTAX"; 
 
 window.addEventListener("load", () => {
-  const testName = "CPTAX"; 
   let excludedIds = ["subjectId", "subjectAge", "subjectSex"];
   if (softReset) {
     excludedIds = [];
@@ -57,7 +57,7 @@ switchLang(testLangEl.value);
 A =testLangEl.value=='en'?'A':'अ';
 X =testLangEl.value=='en'?'X':'न';
 window.addEventListener('load', ()=>{
-  subjectIdEl.value=''; subjectAgeEl.value=''; subjectSexEl.value='';
+  if(!softReset) {subjectIdEl.value=''; subjectAgeEl.value=''; subjectSexEl.value='';}
   extraLettersToggle.addEventListener('change', ()=> lettersGrid.style.display = extraLettersToggle.checked ? 'grid' : 'none');
   startBtn.addEventListener('click', startTest);
   resetBtn.addEventListener('click', resetAll);
@@ -266,6 +266,9 @@ function nextTrial(){
 function handleKeyDown(e){
         if(e.key === 'Escape'){
       localStorage.setItem('softReset','1');
+      localStorage.setItem(`${testName}_${subjectIdEl.id}`,subjectIdEl.value);
+      localStorage.setItem(`${testName}_${subjectSexEl.id}`,subjectSexEl.value);
+      localStorage.setItem(`${testName}_${subjectAgeEl.id}`,subjectAgeEl.value);
       location.reload();
       return;
     }
