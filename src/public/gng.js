@@ -156,6 +156,7 @@ function nextTrial() {
   statusEl.textContent = `Trial ${trial} / ${config.NUM_TRIALS}`;
   currentStimulus = (Math.random() < config.GO_PROBABILITY) ? "GO" : "NOGO";
   stimulusDiv.innerHTML = `<span style="color:var(--button-text);font-size:128px;font-weight:lighter">+</span>`;
+  stimulusOnset = null;
   setTimeout(() => {
     if (!trialActive) return;
   showStimulus(currentStimulus === "GO");
@@ -175,7 +176,7 @@ function nextTrial() {
       results.omissions++;
       trialLogs.push({ trial, stimulus: "GO", responded: false, rt: "", outcome: "Omission" });
     }
-      setTimeout(() => { stimulusDiv.textContent = ""; setTimeout(nextTrial, config.ISI); }, isTrialMode ? 300 : 0);
+      setTimeout(() => { stimulusDiv.textContent = ""; setTimeout(nextTrial, config.ISI-PLUS_TIME); }, isTrialMode ? 300 : 0);
     } else if (currentStimulus === "NOGO" && !responseMade) {
       if (!isTrialMode) {
       results.correctInhibitions++;
