@@ -9,12 +9,6 @@ function switchLangStroop(){}
 
 
 
-// subject fields always blank on refresh
-$('subjectId').value = '';
-$('subjectAge').value = '';
-$('subjectSex').value = '';
-$('numColors').value =  '3';
-
 
 (() => {
 
@@ -75,12 +69,20 @@ $('numColors').value =  '3';
   let isTrialMode = false;
   let hasTrialRunCompleted = false;
   const TRIAL_RUN_COUNT = 5;
+  const testName = "STROOP"; 
 
   let ALL_COLORS = [];
+  const softReset=localStorage.getItem("softReset")==!null;
+
+  // subject fields always blank on refresh
+if(!softReset) {subjectIdEl.value=''; subjectAgeEl.value=''; subjectSexEl.value='';}
+$('numColors').value =  '3';
 
 window.addEventListener("load", () => {
-          const testName = "STROOP"; 
-  const excludedIds = ["subjectId", "subjectAge", "subjectSex"];
+  let excludedIds = ["subjectId", "subjectAge", "subjectSex"];
+  if (softReset) {
+    excludedIds=[];
+  }
     const getStorageKey = (id) => `${testName}_${id}`;
   document.querySelectorAll("#sidebar input, #sidebar select").forEach(el => {
         if (excludedIds.includes(el.id)) return; 
@@ -94,6 +96,7 @@ window.addEventListener("load", () => {
   });
   $("testLang").addEventListener("change",switchLangStroop());
     cntButtotnEl.addEventListener("click",hideInstructions);
+  localStorage.removeItem("softReset");
 });
 
 function switchLangStroop(){
@@ -798,6 +801,14 @@ async function renderCharts(disableAnimation = false) {
           }
         }
       }
+      return;
+    }
+    if(ev.key === 'Escape'){
+      localStorage.setItem('softReset','1');
+      localStorage.setItem(`${testName}_${subjectIdEl.id}`,subjectIdEl.value);
+      localStorage.setItem(`${testName}_${subjectSexEl.id}`,subjectSexEl.value);
+      localStorage.setItem(`${testName}_${subjectAgeEl.id}`,subjectAgeEl.value);
+      location.reload();
       return;
     }
     // if bindings modal open and not capturing - ignore test keys

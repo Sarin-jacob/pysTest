@@ -23,10 +23,14 @@ let hasTrialRunCompleted = false;
 const TRIAL_RUN_COUNT = 5;
 const PLUS_TIME=350;
 let X;
+const softReset=localStorage.getItem("softReset")==!null;
+const testName = "CPTX"; 
 
 window.addEventListener("load", () => {
-          const testName = "CPTX"; 
-  const excludedIds = ["subjectId", "subjectAge", "subjectSex"];
+  let excludedIds = ["subjectId", "subjectAge", "subjectSex"];
+  if (softReset) {
+    excludedIds = [];
+  }
     const getStorageKey = (id) => `${testName}_${id}`;
   document.querySelectorAll("#sidebar input, #sidebar select").forEach(el => {
         if (excludedIds.includes(el.id)) return; 
@@ -37,6 +41,7 @@ window.addEventListener("load", () => {
         el.addEventListener("change", () => {
       localStorage[storageKey] = el.value;
     });
+    localStorage.removeItem("softReset");
   });
 X =testLangEl.value=='en'?'X':'न';
 updateKeyLabels();
@@ -48,7 +53,7 @@ updateKeyLabels();
 switchLang(testLangEl.value);
 
 window.addEventListener('load', ()=>{
-  subjectIdEl.value=''; subjectAgeEl.value=''; subjectSexEl.value='';
+  if(!softReset) {subjectIdEl.value=''; subjectAgeEl.value=''; subjectSexEl.value='';}
   startBtn.addEventListener('click', startTest);
   resetBtn.addEventListener('click', resetAll);
   openReport.addEventListener('click', ()=> { if(results.length===0) showAlert('No results yet — run a test first'); else { popup.style.display='flex'; renderCharts(); }});
@@ -214,6 +219,14 @@ function nextTrial(){
 }
 
 function handleKeyDown(e){
+        if(e.key === 'Escape'){
+      localStorage.setItem(`${testName}_${subjectIdEl.id}`,subjectIdEl.value);
+      localStorage.setItem(`${testName}_${subjectSexEl.id}`,subjectSexEl.value);
+      localStorage.setItem(`${testName}_${subjectAgeEl.id}`,subjectAgeEl.value);
+      localStorage.setItem('softReset','1');
+      location.reload();
+      return;
+    }
   if(popup.style.display === 'flex' || countOverlay.style.display === 'flex' || !awaiting) return;
   const targetKeyName = normKeyName(targetKeyEl.value || 'Space');
   if(keyMatchesEvent(e, targetKeyName)) {
