@@ -125,7 +125,7 @@ function startTest() {
   if (!subjectId) { showAlert("Subject ID is required!"); return; }
   if (!subjectAgeEl.value) { showAlert("Age is required!"); return; }
   if (!subjectSexEl.value) { showAlert("Sex is required!"); return; }
-  if (PLUS_TIME>=config.ISI) { showAlert(`ISI must be greater than ${PLUS_TIME} ms`); return; }
+  if (PLUS_TIME>=isiEl.value) { showAlert(`ISI must be greater than ${PLUS_TIME} ms`); return; }
   
   const wantsTrialRun = trialRunCheckbox.checked;
     if (wantsTrialRun && !hasTrialRunCompleted) {
