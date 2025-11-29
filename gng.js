@@ -11,9 +11,14 @@ const rtCanvas = $('rtChart'), perfCanvas = $('perfChart'), cntButtotnEl=$('cntB
 const instructionsDiv = $('instructions'), trialRunCheckbox = $('trialRunCheckbox');
 const countdownOverlay = $('countdownOverlay'), countdownNum = $('countdownNum');
 
+const softReset=localStorage.getItem("softReset")==!null;
+const testName = "GNG"; 
+
 window.addEventListener("load", () => {
-          const testName = "GNG"; 
-  const excludedIds = ["subjectId", "subjectAge", "subjectSex"];
+  let  excludedIds = ["subjectId", "subjectAge", "subjectSex"];
+  if (softReset) {
+    excludedIds=[];
+  }
     const getStorageKey = (id) => `${testName}_${id}`;
   document.querySelectorAll("#sidebar input, #sidebar select").forEach(el => {
         if (excludedIds.includes(el.id)) return; 
@@ -25,6 +30,7 @@ window.addEventListener("load", () => {
       localStorage[storageKey] = el.value;
     });
   });
+  localStorage.removeItem("softReset");
 });
 
 switchLang($("testLang").value);
@@ -41,13 +47,12 @@ let countdownInterval;
 let trialLogs = [];
 let trialActive = false;
 let rtChart, perfChart;
-const testName = "GoNoGo";
 const PLUS_TIME=350;
 let stimulusTimer;
 
 // Initial setup
 window.addEventListener('load', () => {
-    subjectIdEl.value = ''; subjectAgeEl.value = ''; subjectSexEl.value = '';
+    if(!softReset) {subjectIdEl.value=''; subjectAgeEl.value=''; subjectSexEl.value='';}
     cntButtotnEl.addEventListener("click",hideInstructions);
     startBtn.addEventListener("click", startTest);
     showReportBtn.addEventListener("click", showReport);
@@ -197,6 +202,14 @@ function showStimulus(isGo) {
 }
 
 function handleKeydown(e) {
+      if(e.key === 'Escape'){
+      localStorage.setItem(`${testName}_${subjectIdEl.id}`,subjectIdEl.value);
+      localStorage.setItem(`${testName}_${subjectSexEl.id}`,subjectSexEl.value);
+      localStorage.setItem(`${testName}_${subjectAgeEl.id}`,subjectAgeEl.value);
+      localStorage.setItem('softReset','1');
+      location.reload();
+      return;
+    }
   if (!stimulusOnset || !trialActive || responseMade) return;
   clearTimeout(stimulusTimer);
   responseMade = true;
