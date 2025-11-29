@@ -43,6 +43,7 @@ let trialActive = false;
 let rtChart, perfChart;
 const testName = "GoNoGo";
 const PLUS_TIME=350;
+let stimulusTimer;
 
 // Initial setup
 window.addEventListener('load', () => {
@@ -119,6 +120,7 @@ function startTest() {
   if (!subjectId) { showAlert("Subject ID is required!"); return; }
   if (!subjectAgeEl.value) { showAlert("Age is required!"); return; }
   if (!subjectSexEl.value) { showAlert("Sex is required!"); return; }
+  if (PLUS_TIME>=config.ISI) { showAlert(`ISI must be greater than ${PLUS_TIME} ms`); return; }
   
   const wantsTrialRun = trialRunCheckbox.checked;
     if (wantsTrialRun && !hasTrialRunCompleted) {
@@ -154,7 +156,7 @@ function nextTrial() {
   showStimulus(currentStimulus === "GO");
   stimulusOnset = performance.now();
 
-  setTimeout(() => {
+  stimulusTimer = setTimeout(() => {
     if (!trialActive) return;
     trialActive = false;
     stimulusDiv.textContent = "";
@@ -196,6 +198,7 @@ function showStimulus(isGo) {
 
 function handleKeydown(e) {
   if (!stimulusOnset || !trialActive || responseMade) return;
+  clearTimeout(stimulusTimer);
   responseMade = true;
   trialActive = false;
   let rt = Math.round(performance.now() - stimulusOnset);
