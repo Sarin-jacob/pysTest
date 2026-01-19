@@ -2,8 +2,8 @@
 
 // DOM refs
 const subjectIdEl = $('subjectId'), subjectAgeEl = $('subjectAge'), subjectSexEl = $('subjectSex');
-const numTrialsEl = $('numTrials'), stimTimeEl = $('stimTime'), isiEl =$('isi');
-const goProbEl = $('goProb');
+const numTrialsEl = $('numTrials'), stimTimeEl = $('stimTime'), isiEl =$('isi'),PTrials=$('PTrials');
+const goProbEl = $('goProb'),fixation=$('plustime');
 const targetKeyEl = $('targetKey');
 const startBtn = $('startBtn'), resetBtn = $('resetBtn'), openReport = $('openReport'), saveDefaults = $('saveDefaults');
 const stimDiv = $('stimLetter'), statusEl = $('status'), resultsSummary = $('resultsSummary');
@@ -20,8 +20,8 @@ let rtChart=null, perfChart=null;
 let cachedCsvBlob = null;
 let isTrialMode = false;
 let hasTrialRunCompleted = false;
-const TRIAL_RUN_COUNT = 5;
-const PLUS_TIME=350;
+let practice_run_count = 5;
+let plus_time=500;
 let X;
 const softReset=localStorage.getItem("softReset")==!null;
 const testName = "CPTX"; 
@@ -66,6 +66,10 @@ window.addEventListener('load', ()=>{
   targetKeyEl.addEventListener('input', updateKeyLabels);
   testLangEl.addEventListener("change",()=>{switchLang(testLangEl.value);X = testLangEl.value=='en'?'X':'न';});
   cntButtotnEl.addEventListener("click",hideInstructions);
+  PTrials.addEventListener('change',()=>{practice_run_count=PTrials.value;})
+  practice_run_count=PTrials.value;
+  fixation.addEventListener('change',()=>{plus_time=PTrials.value;})
+  plus_time=fixation.value;
 });
 
 function updateKeyLabels() {
@@ -86,7 +90,7 @@ function keyMatchesEvent(e, name){
 }
 
 function generateTrials(isPractice = false){
-  const N = isPractice ? TRIAL_RUN_COUNT : (Math.max(1, parseInt(numTrialsEl.value,10) || 30));
+  const N = isPractice ? practice_run_count : (Math.max(1, parseInt(numTrialsEl.value,10) || 30));
   const goProb = Math.max(0, Math.min(1, parseFloat(goProbEl.value || 0.4)));
   const pool = (testLangEl.value=='en')?['B','C','D','F','G','H','J','K','L']:['ट','ठ','ड','च','य','र','ग','घ','क'];
   let arr = [];
@@ -198,10 +202,10 @@ function nextTrial(){
       }else {
       // feedback for miss
       beep(380,200);
-      stimDiv.textContent = 'Missed'; stimDiv.style.color = '#ef4444';
-      setTimeout(()=> stimDiv.textContent = '', 200);
+      stimDiv.textContent = 'Missed';stimDiv.style.fontSize='48px'; stimDiv.style.color = '#ef4444';
+      setTimeout(()=> {stimDiv.textContent = '';stimDiv.style.fontSize='';stimDiv.style.color ='';}, 200);
       }
-        stimDiv.textContent = '';
+        // stimDiv.textContent = '';
     } else {
         if (!isTrialMode) {
       correctInhibitions++;
@@ -213,9 +217,10 @@ function nextTrial(){
       }
       stimDiv.textContent = '';
     }
-    isiTimeout = setTimeout(()=> { stimDiv.textContent=''; nextTrial(); }, parseInt(isiEl.value,10)-PLUS_TIME);
+    isiTimeout = setTimeout(()=> { stimDiv.textContent=''; nextTrial(); }, parseInt(isiEl.value,10)
+);
   }, parseInt(stimTimeEl.value,10));
-  },PLUS_TIME);
+  },plus_time);
 }
 
 function handleKeyDown(e){
@@ -248,8 +253,11 @@ function processResponse(which){
     // feedback effects
     const isCorrect = tr.expected;
     stimDiv.style.boxShadow = isCorrect ? '0 8px 40px rgba(16,185,129,0.18)' : '0 8px 40px rgba(239,68,68,0.18)';
-    if (!isCorrect) beep(440, 150);
-    setTimeout(()=> stimDiv.style.boxShadow = '', 160);
+    if (!isCorrect) {
+      console.log("I should be here on wrong press");
+    beep(380, 200); stimDiv.textContent = 'Wrong'; stimDiv.style.fontSize='48px'; stimDiv.style.color = '#ef4444';
+  }
+  setTimeout(()=> {stimDiv.style.boxShadow = ''; stimDiv.style.color=''; stimDiv.style.fontSize=''; stimDiv.textContent = '';}, 200);
   } else {
   if(tr.expected){
     record.correct = 1; record.note='Correct Target'; correctResponses++; rtList.push(rt);
@@ -258,7 +266,7 @@ function processResponse(which){
   }
   results.push(record);
 }
-  stimDiv.textContent = '';
+  // stimDiv.textContent = '';
   isiTimeout = setTimeout(()=> nextTrial(), parseInt(isiEl.value,10));
 }
 
