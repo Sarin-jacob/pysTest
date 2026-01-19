@@ -1,8 +1,8 @@
 
 // DOM refs
 const subjectIdEl = $('subjectId'), subjectAgeEl = $('subjectAge'), subjectSexEl = $('subjectSex');
-const numTrialsEl = $('numTrials'), stimTimeEl = $('stimTime'), isiEl = $('isi');
-const goProbEl = $('goProb'), textureToggleEl = $('textureToggle');
+const numTrialsEl = $('numTrials'), stimTimeEl = $('stimTime'), isiEl = $('isi'),PTrials=$('PTrials');
+const goProbEl = $('goProb'), textureToggleEl = $('textureToggle'),fixation=$('plustime');
 const goColorEl = $('goColor'), nogoColorEl = $('nogoColor');
 const startBtn = $('startBtn'), showReportBtn = $('showReportBtn');
 const stimulusDiv = $('stimulus'), statusEl = $('status'), resultsSummary = $('resultsSummary');
@@ -42,12 +42,12 @@ let responseMade = false;
 let cachedCsvBlob = null;
 let isTrialMode = false;
 let hasTrialRunCompleted = false;
-const TRIAL_RUN_COUNT = 5;
+let practice_run_count = 5;
 let countdownInterval;
 let trialLogs = [];
 let trialActive = false;
 let rtChart, perfChart;
-const PLUS_TIME=350;
+let plus_time=500;
 let stimulusTimer;
 
 // Initial setup
@@ -62,6 +62,10 @@ window.addEventListener('load', () => {
     $('main').addEventListener("pointerdown", () => { if (trialActive) handleKeydown({ type: "click" }); }, {passive:true});
     $("testLang").addEventListener("change",switchLang($("testLang").value));
     $("clsBtn").addEventListener("click",()=>{  popup.style.display = "none";});
+    PTrials.addEventListener('change',()=>{practice_run_count=PTrials.value;})
+    practice_run_count=PTrials.value;
+    fixation.addEventListener('change',()=>{plus_time=PTrials.value;})
+    plus_time=fixation.value;
 });
 
 function getConfig() {
@@ -125,7 +129,7 @@ function startTest() {
   if (!subjectId) { showAlert("Subject ID is required!"); return; }
   if (!subjectAgeEl.value) { showAlert("Age is required!"); return; }
   if (!subjectSexEl.value) { showAlert("Sex is required!"); return; }
-  if (PLUS_TIME>=isiEl.value) { showAlert(`ISI must be greater than ${PLUS_TIME} ms`); return; }
+  // if (plus_time>=isiEl.value) { showAlert(`ISI must be greater than ${plus_time} ms`); return; }
   
   const wantsTrialRun = trialRunCheckbox.checked;
     if (wantsTrialRun && !hasTrialRunCompleted) {
@@ -137,7 +141,7 @@ function startTest() {
 }
 
 function nextTrial() {
-  if (trial >= (isTrialMode ? TRIAL_RUN_COUNT : config.NUM_TRIALS)) {
+  if (trial >= (isTrialMode ? practice_run_count : config.NUM_TRIALS)) {
     if (isTrialMode) {
       isTrialMode = false;
       statusEl.textContent = 'Trial complete. Press Start (Enter) to begin the main test.';
@@ -176,16 +180,16 @@ function nextTrial() {
       results.omissions++;
       trialLogs.push({ trial, stimulus: "GO", responded: false, rt: "", outcome: "Omission" });
     }
-      setTimeout(() => { stimulusDiv.textContent = ""; setTimeout(nextTrial, config.ISI-PLUS_TIME); }, isTrialMode ? 300 : 0);
+      setTimeout(() => { stimulusDiv.textContent = ""; setTimeout(nextTrial, config.ISI); }, isTrialMode ? 300 : 0);
     } else if (currentStimulus === "NOGO" && !responseMade) {
       if (!isTrialMode) {
       results.correctInhibitions++;
       trialLogs.push({ trial, stimulus: "NOGO", responded: false, rt: "", outcome: "Correct Inhibition" });
       }
-      setTimeout(nextTrial, config.ISI-PLUS_TIME);
+      setTimeout(nextTrial, config.ISI);
     }
   }, config.STIMULUS_TIME);
-  }, PLUS_TIME);
+  }, plus_time);
 }
 
 function showStimulus(isGo) {
@@ -229,7 +233,7 @@ function handleKeydown(e) {
     if (isTrialMode) {
     // feedback
     beep(400, 200);
-    // stimulusDiv.innerHTML = `<span style="color:red;font-size:48px;">❌ Error!</span>`;
+    stimulusDiv.innerHTML = `<span style="color:red;font-size:48px;">❌ Wrong!</span>`;
     }else{
     results.commissions++;
     trialLogs.push({ trial, stimulus: "NOGO", responded: true, rt: rt, outcome: "Commission" });
