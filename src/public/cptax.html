@@ -32,12 +32,14 @@
       <summary>Advanced Config</summary>
       <div style="padding:8px">
           <div style="display:inline-flex;width: 100%;justify-content: space-between;align-items: center;">
-          <label>Enable Trial Run</label>
+          <label>Practice Run</label>
           <label class="switch">
               <input id="trialRunCheckbox" type="checkbox" checked>
               <span class="slider"></span>
           </label>
           </div>
+          <label>Practice Trials</label>
+          <input id="PTrials" type="number" value="10" min="6">
               <hr style="margin:10px 0;border:none;border-top:1px solid var(--input-border)" > 
     <label>Test Language</label>
     <select id="testLang">
@@ -50,6 +52,8 @@
         <input id="stimTime" type="number" value="600">
         <label>ISI (ms)</label>
         <input id="isi" type="number" value="500">
+        <label>Fixation Time (ms)</label>
+        <input id="plustime" type="number" value="500">
         <label id="axRateLabel">AX Pair Rate (fraction)</label>
         <input id="axRate" type="number" step="0.01" min="0" max="0.4" value="0.2">
         <hr style="margin:10px 0;border:none;border-top:1px solid var(--input-border)">
