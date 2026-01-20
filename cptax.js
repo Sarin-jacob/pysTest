@@ -2,8 +2,8 @@
 
 // DOM refs
 const subjectIdEl = $('subjectId'), subjectAgeEl = $('subjectAge'), subjectSexEl = $('subjectSex');
-const numTrialsEl = $('numTrials'), stimTimeEl = $('stimTime'), isiEl = $('isi');
-const axRateEl = $('axRate');
+const numTrialsEl = $('numTrials'), stimTimeEl = $('stimTime'), isiEl = $('isi'),PTrials=$('PTrials');
+const axRateEl = $('axRate'),fixation=$('plustime');
 const targetKeyEl = $('targetKey'), nonTargetKeyEl = $('nonTargetKey');
 const colorModeEl = $('colorMode'), colorAEl = $('colorA'), colorBEl = $('colorB'), requireAColorEl = $('requireAColor');
 const extraLettersToggle = $('extraLettersToggle'), lettersGrid = $('lettersGrid');
@@ -22,8 +22,8 @@ let rtChart=null, perfChart=null;
 let cachedCsvBlob = null;
 let isTrialMode = false;
 let hasTrialRunCompleted = false;
-const TRIAL_RUN_COUNT = 10;
-const PLUS_TIME=350;
+let practice_run_count = 5;
+let plus_time=500;
 let A,X;
 
 const softReset=localStorage.getItem("softReset")==!null;
@@ -73,6 +73,10 @@ window.addEventListener('load', ()=>{
   nonTargetKeyEl.addEventListener('input', updateKeyLabels);
   testLangEl.addEventListener("change",()=>{switchLang(testLangEl.value);X =testLangEl.value=='en'?'X':'न';A =testLangEl.value=='en'?'A':'अ';});
   cntButtotnEl.addEventListener("click",hideInstructions);
+  PTrials.addEventListener('change',()=>{practice_run_count=PTrials.value;})
+  practice_run_count=PTrials.value;
+  fixation.addEventListener('change',()=>{plus_time=PTrials.value;})
+  plus_time=fixation.value;
 });
 
 function updateKeyLabels() {
@@ -99,7 +103,7 @@ function getDistractorLetters(){
 }
 
 function generateTrials(isPractice = false){
-  const N = isPractice ? TRIAL_RUN_COUNT : (Math.max(1, parseInt(numTrialsEl.value,10) || 30));
+  const N = isPractice ? practice_run_count : (Math.max(1, parseInt(numTrialsEl.value,10) || 30));
   const axRate = Math.max(0, Math.min(0.4, parseFloat(axRateEl.value || 0.2)));
   const pool = getDistractorLetters();
   let arr = new Array(N).fill(null).map(()=>({ letter: pool[Math.floor(Math.random()*pool.length)], expected:false, color:null }));
@@ -243,10 +247,10 @@ function nextTrial(){
         }else {
       // feedback for miss
       beep(380,200);
-      stimDiv.textContent = 'Missed'; stimDiv.style.color = '#ef4444';
-      setTimeout(()=> stimDiv.textContent = '', 200);
+      stimDiv.textContent = 'Missed';stimDiv.style.fontSize='48px'; stimDiv.style.color = '#ef4444';
+      setTimeout(()=> {stimDiv.textContent = '';stimDiv.style.fontSize='';stimDiv.style.color ='';}, 200);
         }
-        stimDiv.textContent = '';
+        // stimDiv.textContent = '';
     } else {
         if(!isTrialMode){
       correctInhibitions++;
@@ -258,9 +262,9 @@ function nextTrial(){
         }
       stimDiv.textContent = '';
     }
-    isiTimeout = setTimeout(()=> { stimDiv.textContent=''; nextTrial(); }, parseInt(isiEl.value,10)-PLUS_TIME);
+    isiTimeout = setTimeout(()=> { stimDiv.textContent=''; nextTrial(); }, parseInt(isiEl.value,10));
   }, parseInt(stimTimeEl.value,10));
-},PLUS_TIME);
+},plus_time);
 }
 
 function handleKeyDown(e){
@@ -292,8 +296,11 @@ function processResponse(which){
     const isCorrect = (tr.expected && which==='target') || (!tr.expected && which==='nontarget');
     //feedback effects
   stimDiv.style.boxShadow = isCorrect ? '0 8px 40px rgba(16,185,129,0.18)' : '0 8px 40px rgba(239,68,68,0.18)';
-  if (!isCorrect) beep(440,150);
-  setTimeout(()=> stimDiv.style.boxShadow = '', 160);
+  if (!isCorrect) {
+      console.log("I should be here on wrong press");
+    beep(380, 200); stimDiv.textContent = 'Wrong'; stimDiv.style.fontSize='48px'; stimDiv.style.color = '#ef4444';
+  }
+  setTimeout(()=> {stimDiv.style.boxShadow = ''; stimDiv.style.color=''; stimDiv.style.fontSize=''; stimDiv.textContent = '';}, 200);
   }else{
   if(tr.expected){
     if(which === 'target'){ record.correct = 1; record.note='Correct Target'; correctResponses++; rtList.push(rt); }
@@ -304,7 +311,7 @@ function processResponse(which){
   }
   results.push(record);
 }
-  stimDiv.textContent = '';
+  // stimDiv.textContent = '';
   isiTimeout = setTimeout(()=> nextTrial(), parseInt(isiEl.value,10));
 }
 
