@@ -13,6 +13,7 @@ const countdownOverlay = $('countdownOverlay'), countdownNum = $('countdownNum')
 
 const softReset=localStorage.getItem("softReset")==!null;
 const testName = "GNG"; 
+if (softReset) hideInstructions();
 
 window.addEventListener("load", () => {
   let  excludedIds = ["subjectId", "subjectAge", "subjectSex"];
