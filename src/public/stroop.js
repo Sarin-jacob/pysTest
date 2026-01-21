@@ -50,6 +50,8 @@ function switchLangStroop(){}
   const sideBar = $('sidebar');
   const trialRunCheckbox = $('trialRunCheckbox');
   const cntButtotnEl=$('cntButton');
+  const PTrials=$('PTrials');
+  const fixation=$('plustime');
 
   // state
   let bindings = {}; // colorName -> key (lowercase)
@@ -68,8 +70,9 @@ function switchLangStroop(){}
   let cachedCsvBlob = null;
   let isTrialMode = false;
   let hasTrialRunCompleted = false;
-  const TRIAL_RUN_COUNT = 5;
+  let practice_run_count = 5;
   const testName = "STROOP"; 
+  let plus_time=500;
 
   let ALL_COLORS = [];
   const softReset=localStorage.getItem("softReset")==!null;
@@ -77,6 +80,7 @@ function switchLangStroop(){}
   // subject fields always blank on refresh
 if(!softReset) {subjectIdEl.value=''; subjectAgeEl.value=''; subjectSexEl.value='';}
 $('numColors').value =  '3';
+if (softReset) hideInstructions();
 
 window.addEventListener("load", () => {
   let excludedIds = ["subjectId", "subjectAge", "subjectSex"];
@@ -97,6 +101,10 @@ window.addEventListener("load", () => {
   $("testLang").addEventListener("change",switchLangStroop());
     cntButtotnEl.addEventListener("click",hideInstructions);
   localStorage.removeItem("softReset");
+  PTrials.addEventListener('change',()=>{practice_run_count=PTrials.value;})
+  practice_run_count=PTrials.value;
+  fixation.addEventListener('change',()=>{plus_time=PTrials.value;})
+  plus_time=fixation.value;
 });
 
 function switchLangStroop(){
@@ -203,7 +211,7 @@ switchLangStroop();
 
   // generate trials
   function generateTrials(isPractice=false){
-    const N = isPractice ? TRIAL_RUN_COUNT : (Math.max(1, parseInt(numTrialsEl.value,10) || 30));
+    const N = isPractice ? practice_run_count : (Math.max(1, parseInt(numTrialsEl.value,10) || 30));
     const nColors = Math.max(2, Math.min(ALL_COLORS.length, parseInt(numColorsEl.value,10)));
     const matchPct = parseInt(matchPctEl.value,10);
     const colors = ALL_COLORS.slice(0,nColors);
@@ -272,9 +280,11 @@ switchLangStroop();
         stimWordEl.textContent = '';
         }else{
         // show missed briefly feedback
+        beep(380, 200);
         stimWordEl.textContent = 'Missed';
         stimWordEl.style.color = '#ef4444';
-        setTimeout(()=>{ stimWordEl.textContent=''; }, 220);
+        stimWordEl.style.fontSize = '48px';
+        setTimeout(()=> {stimWordEl.textContent = '';stimWordEl.style.fontSize='';stimWordEl.style.color ='';}, 200);
         }
         isiTimeout = setTimeout(()=> nextTrial(), parseInt(isiEl.value,10));
       }
@@ -302,9 +312,16 @@ switchLangStroop();
     }
     const tr = trials[currentIndex];
     statusEl.textContent = `Trial ${currentIndex+1} / ${trials.length}`;
-    // small blank then show
-    // setTimeout(()=> showStim(tr), 120);//check for error
-    showStim(tr);
+    // small blank with plus om fixation time
+    stimWordEl.textContent="+";
+    stimWordEl.style.fontWeight="lighter"
+    stimWordEl.style.color="var(--button-text)";
+    stimWordEl.style.fontSize="128px";
+    setTimeout(()=> {
+      stimWordEl.style.fontSize='';
+      showStim(tr);
+    }, plus_time);//check for error
+    // showStim(tr);
   }
 
   // handle response (key press)
@@ -337,13 +354,13 @@ switchLangStroop();
       stimWordEl.style.boxShadow = '0 8px 40px rgba(16,185,129,0.18)';
     } else {
       stimWordEl.style.boxShadow = '0 8px 40px rgba(239,68,68,0.18)';
-      beep(400,160);
-    }
-    setTimeout(()=> stimWordEl.style.boxShadow = '', 160);
+    beep(380, 200); stimWordEl.textContent = 'Wrong'; stimWordEl.style.fontSize='48px'; stimWordEl.style.color = '#ef4444';
+  }
+  setTimeout(()=> {stimWordEl.style.boxShadow = ''; stimWordEl.style.color=''; stimWordEl.style.fontSize=''; stimWordEl.textContent = '';}, 200);
   }
     // visual flash on keybar
     //feedback blank
-    stimWordEl.textContent=' ';
+    // stimWordEl.textContent=' ';
     highlightKeyByKey(key);
 
     // proceed after ISI

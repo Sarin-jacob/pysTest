@@ -25,6 +25,7 @@ let plus_time=500;
 let X;
 const softReset=localStorage.getItem("softReset")==!null;
 const testName = "CPTX"; 
+if (softReset) hideInstructions();
 
 window.addEventListener("load", () => {
   let excludedIds = ["subjectId", "subjectAge", "subjectSex"];
