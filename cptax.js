@@ -3,7 +3,7 @@
 // DOM refs
 const subjectIdEl = $('subjectId'), subjectAgeEl = $('subjectAge'), subjectSexEl = $('subjectSex');
 const numTrialsEl = $('numTrials'), stimTimeEl = $('stimTime'), isiEl = $('isi'),PTrials=$('PTrials');
-const axRateEl = $('axRate'),fixation=$('plustime');
+const axpairsEl = $('axpairs'),fixation=$('plustime');
 const targetKeyEl = $('targetKey'), nonTargetKeyEl = $('nonTargetKey');
 const colorModeEl = $('colorMode'), colorAEl = $('colorA'), colorBEl = $('colorB'), requireAColorEl = $('requireAColor');
 const extraLettersToggle = $('extraLettersToggle'), lettersGrid = $('lettersGrid');
@@ -98,28 +98,53 @@ function keyMatchesEvent(e, name){
 }
 
 function getDistractorLetters(){
-  let set = (testLangEl.value=='en')?['B']:['प'];
+  // let set = (testLangEl.value=='en')?['A','X']:['अ','न'];
+  let set =[A]
   document.querySelectorAll('.distractorLetter').forEach(ch => { if(ch.checked && !set.includes(ch.value) && !ch.parentElement.parentElement.classList.contains('hidden')) set.push(ch.value); });
-  return Array.from(new Set(set)).slice(0,6);
+  return Array.from(new Set(set)).slice(0,7);
 }
 
 function generateTrials(isPractice = false){
+  let isFrac = false
   const N = isPractice ? practice_run_count : (Math.max(1, parseInt(numTrialsEl.value,10) || 30));
-  const axRate = Math.max(0, Math.min(0.4, parseFloat(axRateEl.value || 0.2)));
+  // if (axpairsEl.value>=1.0)isFrac=true;
+  // const axpairs = isFrac ? Math.floor(N * (Math.max(0, Math.min(0.4, parseFloat(axpairsEl.value || 0.2))))) : axpairsEl.value;
+  const pairs = Math.min(Math.floor(N / 2), Math.floor(((v = parseFloat(axpairsEl.value || 0)) < 1 ? N * v : 2 * v) / 2));
   const pool = getDistractorLetters();
-  let arr = new Array(N).fill(null).map(()=>({ letter: pool[Math.floor(Math.random()*pool.length)], expected:false, color:null }));
+ let arr = Array.from({ length: N }, () => ({
+  letter: pool[Math.floor(Math.random() * pool.length)],
+  expected: false,
+  color: null
+}));
 
-  let pairs = Math.floor(N * axRate);
-  pairs = Math.min(pairs, Math.floor(N/2));
-  const taken = new Set();
-  let placed=0, attempts=0;
-  while(placed < pairs && attempts < pairs*8 + 200){
-    attempts++;
-    const pos = Math.floor(Math.random()*(N-1));
-    if(taken.has(pos) || taken.has(pos+1)) continue;
-    arr[pos].letter = A; arr[pos].expected = false;
-    arr[pos+1].letter = X;
-    taken.add(pos); taken.add(pos+1);
+  console.log(arr.length,pool,N);
+
+  // let pairs = Math.floor(N * axpairs);
+  // pairs = Math.min(pairs, Math.floor(N/2));
+  
+  // all possible AX start positions
+  let positions = [];
+  for (let i = 0; i < N - 1; i++) positions.push(i);
+
+  // shuffle positions
+  for (let i = positions.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [positions[i], positions[j]] = [positions[j], positions[i]];
+  }
+
+  // place exact number of AX pairs
+  let used = new Set();
+  let placed = 0;
+
+  for (let pos of positions) {
+    if (placed >= pairs) break;
+    if (used.has(pos) || used.has(pos + 1)) continue;
+    arr[pos].letter = A;
+    arr[pos].expected = false;
+    arr[pos + 1].letter = X;
+
+    used.add(pos);
+    used.add(pos + 1);
     placed++;
   }
 
@@ -356,7 +381,7 @@ function generateCSV(){
   const meta = [
     `Subject ID,${sid}`, `Age,${subjectAgeEl.value||''}`, `Sex,${subjectSexEl.value||''}`,
     `Test Type,AX-CPT`, `Num Trials,${numTrialsEl.value}`, `Stimulus Time,${stimTimeEl.value}`, `ISI,${isiEl.value}`,
-    `AX Rate,${axRateEl.value}`, `Color Mode,${colorModeEl.checked}`, `ColorA,${colorAEl.value}`, `ColorB,${colorBEl.value}`,
+    `AX Rate,${axpairsEl.value}`, `Color Mode,${colorModeEl.checked}`, `ColorA,${colorAEl.value}`, `ColorB,${colorBEl.value}`,
     `RequireAColor,${requireAColorEl.checked}`, `TargetKey,${targetKeyEl.value}`, `NonTargetKey,${nonTargetKeyEl.value}`
   ].join('\n');
   const hdr = ['trial','letter','color','expected','keyPressed','correct','RT','note'];
@@ -394,7 +419,7 @@ async function downloadPDF(){
     const cfg = {
         'Subject ID': subjectIdEl.value || '', 'Age': subjectAgeEl.value || '', 'Sex': subjectSexEl.value || '',
         'Test Type': 'AX-CPT', 'Num Trials': numTrialsEl.value, 'Stimulus Time (ms)': stimTimeEl.value, 'ISI (ms)': isiEl.value,
-        'AX Rate': axRateEl.value, 'Color Mode': colorModeEl.checked, 'Color A': colorAEl.value, 'Color B': colorBEl.value,
+        'AX Rate': axpairsEl.value, 'Color Mode': colorModeEl.checked, 'Color A': colorAEl.value, 'Color B': colorBEl.value,
         'Require A Color': requireAColorEl.checked, 'Target Key': targetKeyEl.value, 'Non-target Key': nonTargetKeyEl.value
     };
     for(const [k,v] of Object.entries(cfg)){ pdf.setFont('helvetica','bold'); pdf.text(k+':', margin, y1); pdf.setFont('helvetica','normal'); pdf.text(String(v), margin + 58, y1); y1 += 6; }
@@ -423,6 +448,6 @@ function resetAll(){
 }
 
 function saveDefaultsFn(){
-  ['numTrials','stimTime','isi','axRate','targetKey','nonTargetKey'].forEach(k => { if($(k)) localStorage[k] = $(k).value; });
+  ['numTrials','stimTime','isi','axpairs','targetKey','nonTargetKey'].forEach(k => { if($(k)) localStorage[k] = $(k).value; });
   showAlert('Defaults saved');
 }
