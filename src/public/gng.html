@@ -34,12 +34,14 @@
       <summary>Advanced Config</summary>
       <div style="padding: 8px;">
           <div style="display:inline-flex;width: 100%;justify-content: space-between;align-items: center;">
-          <label>Enable Trial Run</label>
+          <label>Practice Run</label>
           <label class="switch">
               <input id="trialRunCheckbox" type="checkbox" checked>
               <span class="slider"></span>
           </label>
           </div>
+          <label>Practice Trials</label>
+          <input id="PTrials" type="number" value="5" min="3">
     <hr style="margin:10px 0;border:none;border-top:1px solid var(--input-border)" > 
     <label>Test Language</label>
     <select id="testLang">
@@ -53,6 +55,9 @@
 
         <label>ISI (ms)</label>
         <input id="isi" type="number" value="1000">
+
+        <label>Fixation Time (ms)</label>
+        <input id="plustime" type="number" value="500">
 
         <label>Go Probability</label>
         <input id="goProb" type="number" step="0.1" value="0.7">
@@ -93,7 +98,7 @@
     <div class="stage">
       <div class="statusRow">
         <div class="infoBox" id="status" style="display: none;">Ready. Configure and press Start Test.</div>
-      <button class="floatbutton" style="right: 50px;font-weight: bolder;" onclick="window.location.href='./index.html';"> 🏠︎ </button>
+      <button class="floatbutton" style="right: 50px;font-weight: bolder;" onclick="window.location.href='./';"> 🏠︎ </button>
         <button id="modeToggle" >🌙</button>
       </div>
       

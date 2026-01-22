@@ -2,8 +2,8 @@
 
 // DOM refs
 const subjectIdEl = $('subjectId'), subjectAgeEl = $('subjectAge'), subjectSexEl = $('subjectSex');
-const numTrialsEl = $('numTrials'), stimTimeEl = $('stimTime'), isiEl = $('isi');
-const axRateEl = $('axRate');
+const numTrialsEl = $('numTrials'), stimTimeEl = $('stimTime'), isiEl = $('isi'),PTrials=$('PTrials');
+const axpairsEl = $('axpairs'),fixation=$('plustime');
 const targetKeyEl = $('targetKey'), nonTargetKeyEl = $('nonTargetKey');
 const colorModeEl = $('colorMode'), colorAEl = $('colorA'), colorBEl = $('colorB'), requireAColorEl = $('requireAColor');
 const extraLettersToggle = $('extraLettersToggle'), lettersGrid = $('lettersGrid');
@@ -22,12 +22,13 @@ let rtChart=null, perfChart=null;
 let cachedCsvBlob = null;
 let isTrialMode = false;
 let hasTrialRunCompleted = false;
-const TRIAL_RUN_COUNT = 10;
-const PLUS_TIME=350;
+let practice_run_count = 5;
+let plus_time=500;
 let A,X;
 
 const softReset=localStorage.getItem("softReset")==!null;
 const testName = "CPTAX"; 
+if (softReset) hideInstructions();
 
 window.addEventListener("load", () => {
   let excludedIds = ["subjectId", "subjectAge", "subjectSex"];
@@ -73,6 +74,10 @@ window.addEventListener('load', ()=>{
   nonTargetKeyEl.addEventListener('input', updateKeyLabels);
   testLangEl.addEventListener("change",()=>{switchLang(testLangEl.value);X =testLangEl.value=='en'?'X':'न';A =testLangEl.value=='en'?'A':'अ';});
   cntButtotnEl.addEventListener("click",hideInstructions);
+  PTrials.addEventListener('change',()=>{practice_run_count=PTrials.value;})
+  practice_run_count=PTrials.value;
+  fixation.addEventListener('change',()=>{plus_time=PTrials.value;})
+  plus_time=fixation.value;
 });
 
 function updateKeyLabels() {
@@ -93,29 +98,65 @@ function keyMatchesEvent(e, name){
 }
 
 function getDistractorLetters(){
-  let set = (testLangEl.value=='en')?['B']:['प'];
+  // let set = (testLangEl.value=='en')?['A','X']:['अ','न'];
+  let set =[A]
   document.querySelectorAll('.distractorLetter').forEach(ch => { if(ch.checked && !set.includes(ch.value) && !ch.parentElement.parentElement.classList.contains('hidden')) set.push(ch.value); });
-  return Array.from(new Set(set)).slice(0,6);
+  return Array.from(new Set(set)).slice(0,7);
 }
 
 function generateTrials(isPractice = false){
-  const N = isPractice ? TRIAL_RUN_COUNT : (Math.max(1, parseInt(numTrialsEl.value,10) || 30));
-  const axRate = Math.max(0, Math.min(0.4, parseFloat(axRateEl.value || 0.2)));
+  let isFrac = false
+  const N = isPractice ? practice_run_count : (Math.max(1, parseInt(numTrialsEl.value,10) || 30));
+  // if (axpairsEl.value>=1.0)isFrac=true;
+  // const axpairs = isFrac ? Math.floor(N * (Math.max(0, Math.min(0.4, parseFloat(axpairsEl.value || 0.2))))) : axpairsEl.value;
+  const pairs = Math.min(Math.floor(N / 2), Math.floor(((v = parseFloat(axpairsEl.value || 0)) < 1 ? N * v : 2 * v) / 2));
   const pool = getDistractorLetters();
-  let arr = new Array(N).fill(null).map(()=>({ letter: pool[Math.floor(Math.random()*pool.length)], expected:false, color:null }));
+ let arr = Array.from({ length: N }, () => ({
+  letter: pool[Math.floor(Math.random() * pool.length)],
+  expected: false,
+  color: null
+}));
 
-  let pairs = Math.floor(N * axRate);
-  pairs = Math.min(pairs, Math.floor(N/2));
-  const taken = new Set();
-  let placed=0, attempts=0;
-  while(placed < pairs && attempts < pairs*8 + 200){
-    attempts++;
-    const pos = Math.floor(Math.random()*(N-1));
-    if(taken.has(pos) || taken.has(pos+1)) continue;
-    arr[pos].letter = A; arr[pos].expected = false;
-    arr[pos+1].letter = X;
-    taken.add(pos); taken.add(pos+1);
+  console.log(arr.length,pool,N);
+
+  // let pairs = Math.floor(N * axpairs);
+  // pairs = Math.min(pairs, Math.floor(N/2));
+  
+  // all possible AX start positions
+  let positions = [];
+  for (let i = 0; i < N - 1; i++) positions.push(i);
+
+  // shuffle positions
+  for (let i = positions.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [positions[i], positions[j]] = [positions[j], positions[i]];
+  }
+
+  // place exact number of AX pairs
+  let used = new Set();
+  let placed = 0;
+
+  for (let pos of positions) {
+    if (placed >= pairs) break;
+    if (used.has(pos) || used.has(pos + 1)) continue;
+    arr[pos].letter = A;
+    arr[pos].expected = false;
+    arr[pos + 1].letter = X;
+
+    used.add(pos);
+    used.add(pos + 1);
     placed++;
+  }
+  const numSprinkles = Math.floor(N * 0.20);
+  let added = 0;
+  let attempts = 0;
+  while (added < numSprinkles && attempts < N * 10) {
+    attempts++;
+    let i = Math.floor(Math.random() * N);
+    if (arr[i].letter === A) continue;
+    if (i > 0 && arr[i - 1].letter === A) continue;
+    arr[i].letter = X;
+    added++;
   }
 
   for(let i=0;i<N;i++){
@@ -243,10 +284,10 @@ function nextTrial(){
         }else {
       // feedback for miss
       beep(380,200);
-      stimDiv.textContent = 'Missed'; stimDiv.style.color = '#ef4444';
-      setTimeout(()=> stimDiv.textContent = '', 200);
+      stimDiv.textContent = 'Missed';stimDiv.style.fontSize='48px'; stimDiv.style.color = '#ef4444';
+      setTimeout(()=> {stimDiv.textContent = '';stimDiv.style.fontSize='';stimDiv.style.color ='';}, 200);
         }
-        stimDiv.textContent = '';
+        // stimDiv.textContent = '';
     } else {
         if(!isTrialMode){
       correctInhibitions++;
@@ -258,9 +299,9 @@ function nextTrial(){
         }
       stimDiv.textContent = '';
     }
-    isiTimeout = setTimeout(()=> { stimDiv.textContent=''; nextTrial(); }, parseInt(isiEl.value,10)-PLUS_TIME);
+    isiTimeout = setTimeout(()=> { stimDiv.textContent=''; nextTrial(); }, parseInt(isiEl.value,10));
   }, parseInt(stimTimeEl.value,10));
-},PLUS_TIME);
+},plus_time);
 }
 
 function handleKeyDown(e){
@@ -292,8 +333,11 @@ function processResponse(which){
     const isCorrect = (tr.expected && which==='target') || (!tr.expected && which==='nontarget');
     //feedback effects
   stimDiv.style.boxShadow = isCorrect ? '0 8px 40px rgba(16,185,129,0.18)' : '0 8px 40px rgba(239,68,68,0.18)';
-  if (!isCorrect) beep(440,150);
-  setTimeout(()=> stimDiv.style.boxShadow = '', 160);
+  if (!isCorrect) {
+      console.log("I should be here on wrong press");
+    beep(380, 200); stimDiv.textContent = 'Wrong'; stimDiv.style.fontSize='48px'; stimDiv.style.color = '#ef4444';
+  }
+  setTimeout(()=> {stimDiv.style.boxShadow = ''; stimDiv.style.color=''; stimDiv.style.fontSize=''; stimDiv.textContent = '';}, 200);
   }else{
   if(tr.expected){
     if(which === 'target'){ record.correct = 1; record.note='Correct Target'; correctResponses++; rtList.push(rt); }
@@ -304,7 +348,7 @@ function processResponse(which){
   }
   results.push(record);
 }
-  stimDiv.textContent = '';
+  // stimDiv.textContent = '';
   isiTimeout = setTimeout(()=> nextTrial(), parseInt(isiEl.value,10));
 }
 
@@ -348,7 +392,7 @@ function generateCSV(){
   const meta = [
     `Subject ID,${sid}`, `Age,${subjectAgeEl.value||''}`, `Sex,${subjectSexEl.value||''}`,
     `Test Type,AX-CPT`, `Num Trials,${numTrialsEl.value}`, `Stimulus Time,${stimTimeEl.value}`, `ISI,${isiEl.value}`,
-    `AX Rate,${axRateEl.value}`, `Color Mode,${colorModeEl.checked}`, `ColorA,${colorAEl.value}`, `ColorB,${colorBEl.value}`,
+    `AX Rate,${axpairsEl.value}`, `Color Mode,${colorModeEl.checked}`, `ColorA,${colorAEl.value}`, `ColorB,${colorBEl.value}`,
     `RequireAColor,${requireAColorEl.checked}`, `TargetKey,${targetKeyEl.value}`, `NonTargetKey,${nonTargetKeyEl.value}`
   ].join('\n');
   const hdr = ['trial','letter','color','expected','keyPressed','correct','RT','note'];
@@ -386,7 +430,7 @@ async function downloadPDF(){
     const cfg = {
         'Subject ID': subjectIdEl.value || '', 'Age': subjectAgeEl.value || '', 'Sex': subjectSexEl.value || '',
         'Test Type': 'AX-CPT', 'Num Trials': numTrialsEl.value, 'Stimulus Time (ms)': stimTimeEl.value, 'ISI (ms)': isiEl.value,
-        'AX Rate': axRateEl.value, 'Color Mode': colorModeEl.checked, 'Color A': colorAEl.value, 'Color B': colorBEl.value,
+        'AX Rate': axpairsEl.value, 'Color Mode': colorModeEl.checked, 'Color A': colorAEl.value, 'Color B': colorBEl.value,
         'Require A Color': requireAColorEl.checked, 'Target Key': targetKeyEl.value, 'Non-target Key': nonTargetKeyEl.value
     };
     for(const [k,v] of Object.entries(cfg)){ pdf.setFont('helvetica','bold'); pdf.text(k+':', margin, y1); pdf.setFont('helvetica','normal'); pdf.text(String(v), margin + 58, y1); y1 += 6; }
@@ -415,6 +459,6 @@ function resetAll(){
 }
 
 function saveDefaultsFn(){
-  ['numTrials','stimTime','isi','axRate','targetKey','nonTargetKey'].forEach(k => { if($(k)) localStorage[k] = $(k).value; });
+  ['numTrials','stimTime','isi','axpairs','targetKey','nonTargetKey'].forEach(k => { if($(k)) localStorage[k] = $(k).value; });
   showAlert('Defaults saved');
 }

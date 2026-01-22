@@ -32,12 +32,14 @@
       <summary>Advanced Config</summary>
       <div style="padding:8px">
           <div style="display:inline-flex;width: 100%;justify-content: space-between;align-items: center;">
-          <label>Enable Trial Run</label>
+          <label>Practice Run</label>
           <label class="switch">
               <input id="trialRunCheckbox" type="checkbox" checked>
               <span class="slider"></span>
           </label>
           </div>
+          <label>Practice Trials</label>
+          <input id="PTrials" type="number" value="5" min="3">
               <hr style="margin:10px 0;border:none;border-top:1px solid var(--input-border)" > 
     <label>Test Language</label>
     <select id="testLang">
@@ -50,8 +52,11 @@
         <input id="stimTime" type="number" value="600">
         <label>ISI (ms)</label>
         <input id="isi" type="number" value="500">
-        <label id="goProbLabel">Target ('X') Probability</label>
-        <input id="goProb" type="number" step="0.05" min="0" max="1" value="0.4">
+        <label>Fixation Time (ms)</label>
+        <input id="plustime" type="number" value="500">
+        <label id="NumXLabel">#Target ('X') / Fraction</label>
+        <input id="NumX" type="number" min="0" value="0.4">
+        <small class="muted">Note: Values less than 1 is treated as Fraction</small>
         <hr style="margin:10px 0;border:none;border-top:1px solid var(--input-border)">
         <label>Response key</label>
         <input id="targetKey" type="text" value="Space" style="margin-bottom: 5px;" placeholder="Target key">
@@ -75,7 +80,7 @@
       <div class="statusRow" style="width:100%">
         <div class="infoBox" id="status">Ready. Configure and press Start Test.</div>
       <button id="modeToggle" >🌙</button>
-      <button class="floatbutton" style="right: 50px;font-weight: bolder;" onclick="window.location.href='./index.html';">🏠︎</button>
+      <button class="floatbutton" style="right: 50px;font-weight: bolder;" onclick="window.location.href='./';">🏠︎</button>
       </div>
       <div id="countdownOverlay"><div id="countdownNum">3</div></div>
       <div class="stimulus cpt" id="stimulus" role="status" aria-live="polite">

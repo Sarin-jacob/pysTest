@@ -36,12 +36,14 @@
       <summary>Advanced Config</summary>
       <div style="padding:10px">
           <div style="display:inline-flex;width: 100%;justify-content: space-between;align-items: center;">
-          <label>Enable Trial Run</label>
+          <label>Practice Run</label>
           <label class="switch">
               <input id="trialRunCheckbox" type="checkbox" checked>
               <span class="slider"></span>
           </label>
           </div>
+          <label>Practice Trials</label>
+          <input id="PTrials" type="number" value="5" min="3">
               <hr style="margin:10px 0;border:none;border-top:1px solid var(--input-border)" > 
     <label for="testLang">Test Language</label>
     <select id="testLang">
@@ -54,6 +56,8 @@
         <input id="stimTime" type="number" value="1500">
         <label for="isi">ISI (ms)</label>
         <input id="isi" type="number" value="800">
+        <label>Fixation Time (ms)</label>
+        <input id="plustime" type="number" value="500">
         <label for="numColors">Number of colors</label>
         <select id="numColors">
           <option value="2">2</option>
@@ -119,7 +123,7 @@
       <div class="keybar" id="keybar"></div>
 
       <div id="resultsSummary" style="width:100%;max-width:980px;display:none;margin-top:8px"></div>
-      <button class="floatbutton" style="right: 50px;font-weight: bolder;" onclick="window.location.href='./index.html';">🏠︎</button>
+      <button class="floatbutton" style="right: 50px;font-weight: bolder;" onclick="window.location.href='./';">🏠︎</button>
       <button id="modeToggle" >🌙</button>
     </div>
     <div id="countdownOverlay"><div id="countdownNum">3</div></div>
