@@ -3,7 +3,7 @@
 // DOM refs
 const subjectIdEl = $('subjectId'), subjectAgeEl = $('subjectAge'), subjectSexEl = $('subjectSex');
 const numTrialsEl = $('numTrials'), stimTimeEl = $('stimTime'), isiEl =$('isi'),PTrials=$('PTrials');
-const goProbEl = $('goProb'),fixation=$('plustime');
+const NumXEl = $('NumX'),fixation=$('plustime');
 const targetKeyEl = $('targetKey');
 const startBtn = $('startBtn'), resetBtn = $('resetBtn'), openReport = $('openReport'), saveDefaults = $('saveDefaults');
 const stimDiv = $('stimLetter'), statusEl = $('status'), resultsSummary = $('resultsSummary');
@@ -90,17 +90,28 @@ function keyMatchesEvent(e, name){
   return e.code.toLowerCase().includes(n);
 }
 
-function generateTrials(isPractice = false){
-  const N = isPractice ? practice_run_count : (Math.max(1, parseInt(numTrialsEl.value,10) || 30));
-  const goProb = Math.max(0, Math.min(1, parseFloat(goProbEl.value || 0.4)));
-  const pool = (testLangEl.value=='en')?['B','C','D','F','G','H','J','K','L']:['ट','ठ','ड','च','य','र','ग','घ','क'];
+function generateTrials(isPractice = false) {
+  const N = isPractice ? practice_run_count : (Math.max(1, parseInt(numTrialsEl.value, 10) || 30));
+  const pool = (testLangEl.value == 'en') ? ['B', 'C', 'D', 'F', 'G', 'H', 'J', 'K', 'L'] : ['ट', 'ठ', 'ड', 'च', 'य', 'र', 'ग', 'घ', 'क'];
   let arr = [];
-  for(let i=0; i<N; i++){
-    if(Math.random() < goProb){
-      arr.push({ letter: X, expected: true });
-    } else {
-      arr.push({ letter: pool[Math.floor(Math.random()*pool.length)], expected: false });
-    }
+  const rawVal = parseFloat(NumXEl.value || 0.4);
+  let targetCount;
+  if (rawVal < 1) {
+    targetCount = Math.round(N * rawVal);
+  } else {
+    targetCount = Math.round(rawVal);
+  }
+  targetCount = isPractice? Math.ceil(N/4): Math.max(0, Math.min(targetCount, N));
+  const distractorCount = N - targetCount;
+  for (let i = 0; i < targetCount; i++) {
+    arr.push({ letter: X, expected: true }); // Assuming X is defined globally as your target
+  }
+  for (let i = 0; i < distractorCount; i++) {
+    arr.push({ letter: pool[Math.floor(Math.random() * pool.length)], expected: false });
+  }
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
   }
   if (isPractice) {
     const hasTarget = arr.some(t => t.expected);
@@ -108,7 +119,7 @@ function generateTrials(isPractice = false){
       arr[2] = { letter: X, expected: true }; // Force a target on the 3rd trial
     }
   }
-  return arr.map((t,i) => ({ idx:i+1, letter:t.letter, expected:!!t.expected }));
+  return arr.map((t, i) => ({ idx: i + 1, letter: t.letter, expected: !!t.expected }));
 }
 
 let countdownInterval = null;
@@ -311,7 +322,7 @@ function generateCSV(){
   const meta = [
     `Subject ID,${sid}`, `Age,${subjectAgeEl.value||''}`, `Sex,${subjectSexEl.value||''}`,
     `Test Type,CPT`, `Num Trials,${numTrialsEl.value}`, `Stimulus Time,${stimTimeEl.value}`, `ISI,${isiEl.value}`,
-    `Target Prob,${goProbEl.value}`, `TargetKey,${targetKeyEl.value}`
+    `Target Prob,${NumXEl.value}`, `TargetKey,${targetKeyEl.value}`
   ].join('\n');
   const hdr = ['trial','letter','expected','keyPressed','correct','RT','note'];
   const rows = [meta, '', hdr.join(',')];
@@ -348,7 +359,7 @@ async function downloadPDF(){
   const cfg = {
     'Subject ID': subjectIdEl.value || '', 'Age': subjectAgeEl.value || '', 'Sex': subjectSexEl.value || '',
     'Test Type': 'CPT', 'Num Trials': numTrialsEl.value, 'Stimulus Time (ms)': stimTimeEl.value,
-    'ISI (ms)': isiEl.value, 'Target Prob': goProbEl.value, 'Target Key': targetKeyEl.value
+    'ISI (ms)': isiEl.value, 'Target Prob': NumXEl.value, 'Target Key': targetKeyEl.value
   };
   for(const [k,v] of Object.entries(cfg)){ pdf.setFont('helvetica','bold'); pdf.text(k+':', margin, y1); pdf.setFont('helvetica','normal'); pdf.text(String(v), margin + 58, y1); y1 += 6; }
   y1 += 4; pdf.setFont('helvetica','bold'); pdf.text('Performance Summary', margin, y1); y1+=6;
@@ -378,6 +389,6 @@ function resetAll(){
 }
 
 function saveDefaultsFn(){
-  ['numTrials','stimTime','isi','goProb','targetKey'].forEach(k => { if($(k)) localStorage[k] = $(k).value; });
+  ['numTrials','stimTime','isi','NumX','targetKey'].forEach(k => { if($(k)) localStorage[k] = $(k).value; });
   showAlert('Defaults saved');
 }
