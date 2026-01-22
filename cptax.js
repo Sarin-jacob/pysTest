@@ -147,6 +147,17 @@ function generateTrials(isPractice = false){
     used.add(pos + 1);
     placed++;
   }
+  const numSprinkles = Math.floor(N * 0.20);
+  let added = 0;
+  let attempts = 0;
+  while (added < numSprinkles && attempts < N * 10) {
+    attempts++;
+    let i = Math.floor(Math.random() * N);
+    if (arr[i].letter === A) continue;
+    if (i > 0 && arr[i - 1].letter === A) continue;
+    arr[i].letter = X;
+    added++;
+  }
 
   for(let i=0;i<N;i++){
     if(arr[i].letter === X && i>0 && arr[i-1].letter === A) arr[i].expected = true;
