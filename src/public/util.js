@@ -239,13 +239,13 @@ function generateAllColors(lang = 'en') {
   
   // Master list of all color translations
   const colorTranslations = {
-    BLUE:   { en: 'BLUE',   mr: 'निळा',    hi: 'नीला',    css: '#0072B2' },
-    YELLOW: { en: 'YELLOW', mr: 'पिवळा',  hi: 'पीला',    css: '#F0E442' },
+    BLUE:   { en: 'BLUE',   mr: 'निळा',    hi: 'नीला',    css: '#0000ff' },
+    YELLOW: { en: 'YELLOW', mr: 'पिवळा',  hi: 'पीला',    css: '#Ffff00' },
+    RED:    { en: 'RED',    mr: 'लाल',    hi: 'लाल',   css: '#ff0000' },
+    GREEN:  { en: 'GREEN',  mr: 'हिरवा',   hi: 'हरा',     css: '#00ff00' },
+    BROWN:  { en: 'BROWN',  mr: 'तपकिरी',  hi: 'भूरा',     css: '#654321' },
     ORANGE: { en: 'ORANGE', mr: 'नारंगी',  hi: 'नारंगी',   css: '#E69F00' },
     PURPLE: { en: 'PURPLE', mr: 'जांभळा',  hi: 'बैंगनी',  css: '#8b5cf6' },
-    RED:    { en: 'RED',    mr: 'लाल',    hi: 'लाल',   css: '#ef4444' },
-    GREEN:  { en: 'GREEN',  mr: 'हिरवा',   hi: 'हरा',     css: '#10b981' },
-    BROWN:  { en: 'BROWN',  mr: 'तपकिरी',  hi: 'भूरा',     css: '#af623a' }
   };
 
   // Build the array by mapping over the master list
