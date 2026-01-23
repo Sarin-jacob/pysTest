@@ -35,7 +35,7 @@ window.addEventListener("DOMContentLoaded", () => {
   $("modeToggle").addEventListener("click",toggleMode);
   // Temporarily disable transitions
   document.body.style.transition = "none";
-  const savedMode = localStorage.getItem("mode");
+  const savedMode = localStorage.getItem("theme");
   const modeToggle = document.getElementById('modeToggle');
 
   if (savedMode === "light") {
@@ -91,7 +91,7 @@ if (modeToggle) {
       document.body.classList.toggle("light");
       let isLight=document.body.classList.contains("light")
       modeToggle.textContent = isLight ? "🌞" : "🌙";
-      localStorage.setItem("mode", isLight ? "light" : "dark");
+      localStorage.setItem("theme", isLight ? "light" : "dark");
   }
 }
 
