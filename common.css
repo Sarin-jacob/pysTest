@@ -207,6 +207,8 @@ details.advanced-config summary {
   user-select: none;
   position: relative;
   overflow: hidden;
+  line-height: 1; 
+  text-align: center;
 }
 
 /* Test-specific stimulus styles */
@@ -216,12 +218,7 @@ details.advanced-config summary {
 .stimulus.gng.big { font-size: 400px; } For GNG shape mode */
 
 /* Test-specific stimulus styles (using clamp for robust responsiveness) */
-/* .stimulus.stroop { font-size: clamp(58px, 50cqw, 30cqh); } */
-.stimulus.stroop {
-  font-size: clamp(3rem, 20cqmin, 15rem);
-  line-height: 1; 
-  text-align: center;
-}
+.stimulus.stroop {font-size: clamp(3rem, 20cqmin, 15rem);}
 .stimulus.cpt    { font-size: clamp(120px, 50cqw, 80cqh); }
 .stimulus.gng    { font-size: clamp(240px, 50cqw, 65cqh); }
 .stimulus.gng.big { font-size: clamp(400px, 50cqw, 90cqh); }
