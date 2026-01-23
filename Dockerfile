@@ -65,6 +65,8 @@ RUN for f in $(find public -name '*.html'); do \
         --minify-css true; \
     done
 
+RUN cp public/favicon.svg public_dist/favicon.svg
+
 # Prune dev dependencies for production image size
 RUN npm prune --production
 
