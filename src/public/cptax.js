@@ -109,9 +109,13 @@ function generateTrials(isPractice = false){
   const N = isPractice ? practice_run_count : (Math.max(1, parseInt(numTrialsEl.value,10) || 30));
   // if (axpairsEl.value>=1.0)isFrac=true;
   // const axpairs = isFrac ? Math.floor(N * (Math.max(0, Math.min(0.4, parseFloat(axpairsEl.value || 0.2))))) : axpairsEl.value;
-  const pairs = Math.min(Math.floor(N / 2), Math.floor(((v = parseFloat(axpairsEl.value || 0)) < 1 ? N * v : 2 * v) / 2));
+  const val = parseFloat(axpairsEl.value || 0);
+  const pairs = Math.min(
+  Math.floor(N / 2), 
+  Math.floor((val < 1 ? N * val : 2 * val) / 2)
+  );
   const pool = getDistractorLetters();
- let arr = Array.from({ length: N }, () => ({
+  let arr = Array.from({ length: N }, () => ({
   letter: pool[Math.floor(Math.random() * pool.length)],
   expected: false,
   color: null
