@@ -347,8 +347,8 @@ function processResponse(which){
     else { record.correct = 0; record.note='Commission on Non-target'; commissions++; if(colorModeEl.checked) beep(380,160); }
   }
   results.push(record);
+  stimDiv.textContent = '';
 }
-  // stimDiv.textContent = '';
   isiTimeout = setTimeout(()=> nextTrial(), parseInt(isiEl.value,10));
 }
 

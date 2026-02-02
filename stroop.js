@@ -348,6 +348,7 @@ switchLangStroop();
       correct: pressedIsCorrect ? 1 : 0,
       RT: pressedIsCorrect ? rt : rt
     });
+    stimWordEl.textContent=' ';
   }else{
     // feedback effects
     if(pressedIsCorrect){
@@ -360,7 +361,6 @@ switchLangStroop();
   }
     // visual flash on keybar
     //feedback blank
-    // stimWordEl.textContent=' ';
     highlightKeyByKey(key);
 
     // proceed after ISI
