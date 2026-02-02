@@ -277,8 +277,8 @@ function processResponse(which){
     record.correct = 0; record.note='Commission on Non-target'; commissions++;
   }
   results.push(record);
+  stimDiv.textContent = '';
 }
-  // stimDiv.textContent = '';
   isiTimeout = setTimeout(()=> nextTrial(), parseInt(isiEl.value,10));
 }
 
