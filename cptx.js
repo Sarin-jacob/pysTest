@@ -2,7 +2,7 @@
 
 // DOM refs
 const subjectIdEl = $('subjectId'), subjectAgeEl = $('subjectAge'), subjectSexEl = $('subjectSex');
-const numTrialsEl = $('numTrials'), stimTimeEl = $('stimTime'), isiEl =$('isi'),PTrials=$('PTrials');
+const numTrialsEl = $('numTrials'), stimTimeEl = $('stimTime'), isiEl =$('isi'),PTrials=$('PTrials'), stimShowTimeEl=$("stimShowTime");
 const NumXEl = $('NumX'),fixation=$('plustime');
 const targetKeyEl = $('targetKey');
 const startBtn = $('startBtn'), resetBtn = $('resetBtn'), openReport = $('openReport'), saveDefaults = $('saveDefaults');
@@ -205,6 +205,7 @@ function nextTrial(){
   awaiting = true;
   stimShownAt = performance.now();
 
+  setTimeout(()=>{stimDiv.textContent=''},parseInt(stimShowTimeEl.value,10));
   stimTimeout = setTimeout(()=>{
     if(!awaiting) return;
     awaiting = false;
@@ -229,8 +230,7 @@ function nextTrial(){
       }
       stimDiv.textContent = '';
     }
-    isiTimeout = setTimeout(()=> { stimDiv.textContent=''; nextTrial(); }, parseInt(isiEl.value,10)
-);
+    isiTimeout = setTimeout(()=> { stimDiv.textContent=''; nextTrial(); }, parseInt(isiEl.value,10));
   }, parseInt(stimTimeEl.value,10));
   },plus_time);
 }

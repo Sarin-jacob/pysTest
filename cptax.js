@@ -2,7 +2,7 @@
 
 // DOM refs
 const subjectIdEl = $('subjectId'), subjectAgeEl = $('subjectAge'), subjectSexEl = $('subjectSex');
-const numTrialsEl = $('numTrials'), stimTimeEl = $('stimTime'), isiEl = $('isi'),PTrials=$('PTrials');
+const numTrialsEl = $('numTrials'), stimTimeEl = $('stimTime'), isiEl = $('isi'),PTrials=$('PTrials'), stimShowTimeEl=$("stimShowTime");
 const axpairsEl = $('axpairs'),fixation=$('plustime');
 const targetKeyEl = $('targetKey'), nonTargetKeyEl = $('nonTargetKey');
 const colorModeEl = $('colorMode'), colorAEl = $('colorA'), colorBEl = $('colorB'), requireAColorEl = $('requireAColor');
@@ -279,6 +279,7 @@ function nextTrial(){
   awaiting = true;
   stimShownAt = performance.now();
 
+setTimeout(()=>{stimDiv.textContent=''},parseInt(stimShowTimeEl.value,10));
   stimTimeout = setTimeout(()=>{
     if(!awaiting) return;
     awaiting = false;
