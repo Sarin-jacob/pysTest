@@ -52,7 +52,7 @@ function switchLangStroop(){}
   const cntButtotnEl=$('cntButton');
   const PTrials=$('PTrials');
   const fixation=$('plustime');
-
+  const stimShowTimeEl=$("stimShowTime");
   // state
   let bindings = {}; // colorName -> key (lowercase)
   let trials = [];
@@ -259,6 +259,7 @@ switchLangStroop();
     stimWordEl.style.transform = `rotate(${tr.angle}deg)`;
     // center and style
     stimulusShownAt = performance.now();
+    setTimeout(()=>{stimWordEl.textContent=''},parseInt(stimShowTimeEl.value,10));
     awaitingResponse = true;
     // set timeout for omission
     stimTimeout = setTimeout(()=>{
