@@ -50,6 +50,7 @@ let trialActive = false;
 let rtChart, perfChart;
 let plus_time=500;
 let stimulusTimer;
+let showTimeout=null;
 
 // Initial setup
 window.addEventListener('load', () => {
@@ -130,6 +131,7 @@ function startTest() {
   if (!subjectId) { showAlert("Subject ID is required!"); return; }
   if (!subjectAgeEl.value) { showAlert("Age is required!"); return; }
   if (!subjectSexEl.value) { showAlert("Sex is required!"); return; }
+  if(parseInt(stimShowTimeEl.value,10)>parseInt(stimTimeEl.value,10)){showAlert('Stimulus time should be less than Response Window'); return;}
   // if (plus_time>=isiEl.value) { showAlert(`ISI must be greater than ${plus_time} ms`); return; }
   
   const wantsTrialRun = trialRunCheckbox.checked;
@@ -167,7 +169,7 @@ function nextTrial() {
   showStimulus(currentStimulus === "GO");
   stimulusOnset = performance.now();
 
-  setTimeout(()=>{stimulusDiv.textContent=''},parseInt(stimShowTimeEl.value,10));
+  showTimeout=setTimeout(()=>{stimulusDiv.textContent=''},parseInt(stimShowTimeEl.value,10));
   stimulusTimer = setTimeout(() => {
     if (!trialActive) return;
     trialActive = false;
@@ -218,7 +220,7 @@ function handleKeydown(e) {
       return;
     }
   if (!stimulusOnset || !trialActive || responseMade) return;
-  clearTimeout(stimulusTimer);
+  clearTimeout(stimulusTimer);clearTimeout(showTimeout);
   responseMade = true;
   trialActive = false;
   let rt = Math.round(performance.now() - stimulusOnset);
