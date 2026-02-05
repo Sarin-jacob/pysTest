@@ -1,7 +1,7 @@
 
 // DOM refs
 const subjectIdEl = $('subjectId'), subjectAgeEl = $('subjectAge'), subjectSexEl = $('subjectSex');
-const numTrialsEl = $('numTrials'), stimTimeEl = $('stimTime'), isiEl = $('isi'),PTrials=$('PTrials');
+const numTrialsEl = $('numTrials'), stimTimeEl = $('stimTime'), isiEl = $('isi'),PTrials=$('PTrials'),  stimShowTimeEl=$("stimShowTime");
 const goProbEl = $('goProb'), textureToggleEl = $('textureToggle'),fixation=$('plustime');
 const goColorEl = $('goColor'), nogoColorEl = $('nogoColor');
 const startBtn = $('startBtn'), showReportBtn = $('showReportBtn');
@@ -167,6 +167,7 @@ function nextTrial() {
   showStimulus(currentStimulus === "GO");
   stimulusOnset = performance.now();
 
+  setTimeout(()=>{stimulusDiv.textContent=''},parseInt(stimShowTimeEl.value,10));
   stimulusTimer = setTimeout(() => {
     if (!trialActive) return;
     trialActive = false;
