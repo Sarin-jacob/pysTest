@@ -260,6 +260,24 @@ function generateAllColors(lang = 'en') {
 
   return allColors;
 }
+
+/**
+ * @param {number} type - 0: Correct, 1: Incorrect, 2: Missed
+ * @param {string} lang - 'en', 'mr', or 'hi'
+ */
+function GenerateFeedback(type=0, lang = 'en') {
+  const feedback_dict = {
+    0: { en: 'Correct', mr: 'बरोबर', hi: 'सही' },
+    1: { en: 'Incorrect', mr: 'चुकीचे', hi: 'गलत' },
+    2: { en: 'Missed', mr: 'चुकले', hi: 'छूट गया' }
+  };
+
+  // Check if the type exists, otherwise return an empty string or error
+  if (!feedback_dict[type]) return '';
+
+  return feedback_dict[type][lang] || feedback_dict[type]['en'];
+}
+
 //function and variable to keep unused function available after mini
 let fsake=0;
 function fsaker() {fsake=1;}
@@ -274,6 +292,7 @@ if(fsake){
   hideInstructions();
   showAlert();
   toggleMode();
+  GenerateFeedback();
   // added again so there would be function assignment
     beep();
   generateAllColors();
@@ -285,4 +304,5 @@ if(fsake){
   hideInstructions();
   showAlert();
   toggleMode();
+  GenerateFeedback();
 }
