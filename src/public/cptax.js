@@ -16,7 +16,7 @@ const targetBtn = $('targetBtn'), nonTargetBtn = $('nonTargetBtn');
 const trialRunCheckbox = $('trialRunCheckbox'),testLangEl=$('testLang');
 
 let trials = [], currentIndex = -1, awaiting = false, stimShownAt = 0;
-let stimTimeout = null, isiTimeout = null;
+let stimTimeout = null, isiTimeout = null; let showTimeout=null;
 let results = [], rtList = [], omissions=0, commissions=0, correctResponses=0, correctInhibitions=0;
 let rtChart=null, perfChart=null;
 let cachedCsvBlob = null;
@@ -200,6 +200,7 @@ function startTest(){
   if(!sid){ showAlert('Subject ID is required'); return; }
   if(!subjectAgeEl.value){ showAlert('Age is required'); return; }
   if(!subjectSexEl.value){ showAlert('Sex is required'); return; }
+  if(parseInt(stimShowTimeEl.value,10)>parseInt(stimTimeEl.value,10)){showAlert('Stimulus time should be less than Response Window'); return;}
   const wantsTrialRun = trialRunCheckbox.checked;
   if(wantsTrialRun && !hasTrialRunCompleted){
     runPracticeSession();
@@ -249,7 +250,7 @@ function runMainSession() {
 
 function nextTrial(){
   currentIndex++;
-  clearTimeout(stimTimeout); clearTimeout(isiTimeout);
+  clearTimeout(showTimeout); clearTimeout(stimTimeout); clearTimeout(isiTimeout);
   if(currentIndex >= trials.length){
     if(isTrialMode){
         isTrialMode = false;
@@ -279,7 +280,7 @@ function nextTrial(){
   awaiting = true;
   stimShownAt = performance.now();
 
-setTimeout(()=>{stimDiv.textContent=''},parseInt(stimShowTimeEl.value,10));
+  showTimeout=setTimeout(()=>{stimDiv.textContent=''},parseInt(stimShowTimeEl.value,10));
   stimTimeout = setTimeout(()=>{
     if(!awaiting) return;
     awaiting = false;
@@ -331,6 +332,7 @@ function processResponse(which){
   if(!awaiting) return;
   awaiting = false;
   clearTimeout(stimTimeout);
+  clearTimeout(showTimeout);
   const tr = trials[currentIndex];
   const rt = Math.round(performance.now() - stimShownAt);
   let record = { trial: tr.idx, letter: tr.letter, expected:tr.expected, keyPressed: which, RT: rt, correct:0, note:'' };
@@ -456,7 +458,7 @@ async function downloadPDF(){
 }
 
 function resetAll(){
-  clearTimeout(stimTimeout); clearTimeout(isiTimeout); clearInterval(countdownInterval);
+  clearTimeout(showTimeout); clearTimeout(stimTimeout); clearTimeout(isiTimeout); clearInterval(countdownInterval);
   trials=[]; results=[]; currentIndex=-1; awaiting=false;
   stimDiv.textContent='—'; stimDiv.style.color=''; statusEl.textContent='Ready. Configure and press Start Test.'; resultsSummary.style.display='none';
   popup.style.display='none';
