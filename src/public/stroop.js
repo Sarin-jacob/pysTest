@@ -61,6 +61,7 @@ function switchLangStroop(){}
   let stimulusShownAt = 0;
   let stimTimeout = null;
   let isiTimeout = null;
+  let showTimeout=null;
   let results = []; // per-trial records
   let lastCapturedKey = null;
   let currentBindingCapture = null;
@@ -259,7 +260,7 @@ switchLangStroop();
     stimWordEl.style.transform = `rotate(${tr.angle}deg)`;
     // center and style
     stimulusShownAt = performance.now();
-    setTimeout(()=>{stimWordEl.textContent=''},parseInt(stimShowTimeEl.value,10));
+    showTimeout=setTimeout(()=>{stimWordEl.textContent=''},parseInt(stimShowTimeEl.value,10));
     awaitingResponse = true;
     // set timeout for omission
     stimTimeout = setTimeout(()=>{
@@ -295,7 +296,7 @@ switchLangStroop();
   // next trial
   function nextTrial(){
     currentIndex++;
-    clearTimeout(stimTimeout); clearTimeout(isiTimeout);
+    clearTimeout(stimTimeout); clearTimeout(isiTimeout); clearTimeout(showTimeout);
     stimWordEl.style.transform = 'rotate(0deg)';
     stimWordEl.style.color = 'var(--muted)';
     if(currentIndex >= trials.length){
@@ -330,6 +331,7 @@ switchLangStroop();
     key = normKey(key);
     if(!awaitingResponse) return;
     awaitingResponse = false;
+    clearTimeout(showTimeout);
     clearTimeout(stimTimeout);
     const tr = trials[currentIndex];
     const rt = Math.round(performance.now() - stimulusShownAt);
@@ -424,6 +426,7 @@ let countdownInterval = null;
     if(!sid){ showAlert('Subject ID is required'); return; }
     if(!subjectAgeEl.value){ showAlert('Age is required'); return; }
     if(!subjectSexEl.value){ showAlert('Sex is required'); return; }
+    if(parseInt(stimShowTimeEl.value,10)>parseInt(stimTimeEl.value,10)){showAlert('Stimulus time should be less than Response Window'); return;}
 
     // validate bindings
     const neededColors = ALL_COLORS.slice(0, parseInt(numColorsEl.value,10)).map(c=>c.name);
