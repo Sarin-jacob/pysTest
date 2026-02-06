@@ -3,7 +3,7 @@
 const subjectIdEl = $('subjectId'), subjectAgeEl = $('subjectAge'), subjectSexEl = $('subjectSex');
 const numTrialsEl = $('numTrials'), stimTimeEl = $('stimTime'), isiEl = $('isi'),PTrials=$('PTrials'),  stimShowTimeEl=$("stimShowTime");
 const goProbEl = $('goProb'), textureToggleEl = $('textureToggle'),fixation=$('plustime');
-const goColorEl = $('goColor'), nogoColorEl = $('nogoColor');
+const goColorEl = $('goColor'), nogoColorEl = $('nogoColor'), testLangEl=$("testLang");
 const startBtn = $('startBtn'), showReportBtn = $('showReportBtn');
 const stimulusDiv = $('stimulus'), statusEl = $('status'), resultsSummary = $('resultsSummary');
 const popup = $('popup'), csvBtn = $('csvBtn'), pdfBtn = $('pdfBtn'), sideBar = $('sidebar');
@@ -34,7 +34,7 @@ window.addEventListener("load", () => {
   localStorage.removeItem("softReset");
 });
 
-switchLang($("testLang").value);
+switchLang(testLangEl.value);
 
 let trial, config, results, subjectId;
 let currentStimulus = null;
@@ -51,7 +51,9 @@ let rtChart, perfChart;
 let plus_time=500;
 let stimulusTimer;
 let showTimeout=null;
-
+let isiTimeout=null;
+const FEEDBACK_TIME = 1000;
+ 
 // Initial setup
 window.addEventListener('load', () => {
     if(!softReset) {subjectIdEl.value=''; subjectAgeEl.value=''; subjectSexEl.value='';}
@@ -62,7 +64,7 @@ window.addEventListener('load', () => {
     pdfBtn.addEventListener("click", downloadPDF);
     document.addEventListener("keydown", handleKeydown);
     $('main').addEventListener("pointerdown", () => { if (trialActive) handleKeydown({ type: "click" }); }, {passive:true});
-    $("testLang").addEventListener("change",switchLang($("testLang").value));
+    testLangEl.addEventListener("change",switchLang(testLangEl.value));
     $("clsBtn").addEventListener("click",()=>{  popup.style.display = "none";});
     PTrials.addEventListener('change',()=>{practice_run_count=PTrials.value;})
     practice_run_count=PTrials.value;
@@ -157,6 +159,7 @@ function nextTrial() {
     }
     return;
   }
+  const StarISI =()=>{isiTimeout = setTimeout(()=> { stimulusDiv.textContent=''; nextTrial(); }, parseInt(isiEl.value,10));};
   trial++;
   responseMade = false;
   trialActive = true;
@@ -179,18 +182,22 @@ function nextTrial() {
       if (isTrialMode) {
       //feedback
       beep(400, 200);
-      stimulusDiv.innerHTML = `<span style="color:red;font-size:48px;">❌ Missed!</span>`;
-      }else{
+      stimulusDiv.innerHTML = `<span style="color:red;font-size:48px;">${GenerateFeedback(2,testLangEl.value)}</span>`;
+      setTimeout(() => { stimulusDiv.textContent = ""; StarISI(); }, FEEDBACK_TIME);
+    }else{
       results.omissions++;
       trialLogs.push({ trial, stimulus: "GO", responded: false, rt: "", outcome: "Omission" });
+      StarISI();
     }
-      setTimeout(() => { stimulusDiv.textContent = ""; setTimeout(nextTrial, config.ISI); }, isTrialMode ? 300 : 0);
     } else if (currentStimulus === "NOGO" && !responseMade) {
       if (!isTrialMode) {
       results.correctInhibitions++;
       trialLogs.push({ trial, stimulus: "NOGO", responded: false, rt: "", outcome: "Correct Inhibition" });
+      StarISI();
+      }else{
+      stimulusDiv.innerHTML = `<span style="color:green;font-size:48px;">${GenerateFeedback(0,testLangEl.value)}</span>`;
+      setTimeout(() => { stimulusDiv.textContent = ""; StarISI(); }, FEEDBACK_TIME);
       }
-      setTimeout(nextTrial, config.ISI);
     }
   }, config.STIMULUS_TIME);
   }, plus_time);
@@ -219,6 +226,7 @@ function handleKeydown(e) {
       location.reload();
       return;
     }
+  const StarISI =()=>{isiTimeout = setTimeout(()=> { stimulusDiv.textContent=''; nextTrial(); }, parseInt(isiEl.value,10));};
   if (!stimulusOnset || !trialActive || responseMade) return;
   clearTimeout(stimulusTimer);clearTimeout(showTimeout);
   responseMade = true;
@@ -231,18 +239,22 @@ function handleKeydown(e) {
     results.reactionTimes.push(rt);
     results.correctResponses++;
     trialLogs.push({ trial, stimulus: "GO", responded: true, rt: rt, outcome: "Correct" });
+    StarISI();
+    }else{
+      stimulusDiv.innerHTML = `<span style="color:green;font-size:48px;">${GenerateFeedback(0,testLangEl.value)}</span>`;
+      setTimeout(() => { stimulusDiv.textContent = ""; StarISI(); }, FEEDBACK_TIME);
     }
-    setTimeout(nextTrial, config.ISI);
   } else if (currentStimulus === "NOGO") {
     if (isTrialMode) {
     // feedback
     beep(400, 200);
-    stimulusDiv.innerHTML = `<span style="color:red;font-size:48px;">❌ Wrong!</span>`;
+    stimulusDiv.innerHTML = `<span style="color:red;font-size:48px;">${GenerateFeedback(1,testLangEl.value)}</span>`;
+    setTimeout(() => { stimulusDiv.textContent = ""; StarISI(); }, FEEDBACK_TIME);
     }else{
     results.commissions++;
     trialLogs.push({ trial, stimulus: "NOGO", responded: true, rt: rt, outcome: "Commission" });
+    StarISI();
     }
-    setTimeout(() => { stimulusDiv.textContent = ""; setTimeout(nextTrial, config.ISI); }, isTrialMode ? 300 : 0);
   }
 }
 

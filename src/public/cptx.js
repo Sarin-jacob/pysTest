@@ -23,6 +23,7 @@ let hasTrialRunCompleted = false;
 let practice_run_count = 5;
 let plus_time=500;
 let X;
+const FEEDBACK_TIME = 1000;
 const softReset=localStorage.getItem("softReset")==!null;
 const testName = "CPTX"; 
 if (softReset) hideInstructions();
@@ -192,6 +193,7 @@ function nextTrial(){
     }
     return;
   }
+  const StarISI =()=>{isiTimeout = setTimeout(()=> { stimDiv.textContent=''; nextTrial(); }, parseInt(isiEl.value,10));};
   stimDiv.textContent="+";
   stimDiv.style.fontWeight="lighter"
   stimDiv.style.color="var(--button-text)";
@@ -213,25 +215,28 @@ function nextTrial(){
     if(tr.expected){
       if (!isTrialMode) {
       omissions++; results.push({ trial:tr.idx, letter:tr.letter, expected:true, keyPressed:'', RT:'', correct:0, note:'Omission' });
+      StarISI();
       }else {
       // feedback for miss
       beep(380,200);
-      stimDiv.textContent = 'Missed';stimDiv.style.fontSize='48px'; stimDiv.style.color = '#ef4444';
-      setTimeout(()=> {stimDiv.textContent = '';stimDiv.style.fontSize='';stimDiv.style.color ='';}, 200);
+      stimDiv.textContent = GenerateFeedback(2,testLangEl.value);stimDiv.style.fontSize='48px'; stimDiv.style.color = '#ef4444';
+      setTimeout(()=> {stimDiv.textContent = '';stimDiv.style.fontSize='';stimDiv.style.color =''; StarISI();}, FEEDBACK_TIME);
       }
         // stimDiv.textContent = '';
     } else {
         if (!isTrialMode) {
       correctInhibitions++;
       results.push({ trial:tr.idx, letter:tr.letter, expected:false, keyPressed:'', RT:'', correct:1, note:'Correct Inhibition' });
+      StarISI();
       } else {
         // feedback for correct inhibition
-      stimDiv.style.boxShadow = '0 8px 30px rgba(0,0,0,0.08)';
-      setTimeout(()=> stimDiv.style.boxShadow = '', 120);
+      console.log("good job")
+      stimDiv.textContent = GenerateFeedback(0,testLangEl.value);stimDiv.style.fontSize='48px'; stimDiv.style.color = '#11b447';
+      setTimeout(()=> {stimDiv.textContent = '';stimDiv.style.fontSize='';stimDiv.style.color =''; StarISI();}, FEEDBACK_TIME);
       }
-      stimDiv.textContent = '';
+      // stimDiv.textContent = '';
     }
-    isiTimeout = setTimeout(()=> { stimDiv.textContent=''; nextTrial(); }, parseInt(isiEl.value,10));
+    
   }, parseInt(stimTimeEl.value,10));
   },plus_time);
 }
@@ -260,18 +265,17 @@ function processResponse(which){
   awaiting = false;
   clearTimeout(stimTimeout);
   clearTimeout(stimTimeout);
+  const StarISI =()=>{isiTimeout = setTimeout(()=> { stimDiv.textContent=''; nextTrial(); }, parseInt(isiEl.value,10));};
   const tr = trials[currentIndex];
   const rt = Math.round(performance.now() - stimShownAt);
   let record = { trial: tr.idx, letter: tr.letter, expected:tr.expected, keyPressed: 'target', RT: rt, correct:0, note:'' };
   if (isTrialMode) {
     // feedback effects
     const isCorrect = tr.expected;
-    stimDiv.style.boxShadow = isCorrect ? '0 8px 40px rgba(16,185,129,0.18)' : '0 8px 40px rgba(239,68,68,0.18)';
     if (!isCorrect) {
-      console.log("I should be here on wrong press");
-    beep(380, 200); stimDiv.textContent = 'Wrong'; stimDiv.style.fontSize='48px'; stimDiv.style.color = '#ef4444';
-  }
-  setTimeout(()=> {stimDiv.style.boxShadow = ''; stimDiv.style.color=''; stimDiv.style.fontSize=''; stimDiv.textContent = '';}, 200);
+    beep(380, 200); stimDiv.textContent = GenerateFeedback(1,testLangEl.value); stimDiv.style.fontSize='48px'; stimDiv.style.color = '#ef4444';
+  }else{stimDiv.textContent = GenerateFeedback(0,testLangEl.value); stimDiv.style.fontSize='48px'; stimDiv.style.color = '#11b447';}
+  setTimeout(()=> { stimDiv.style.color=''; stimDiv.style.fontSize=''; stimDiv.textContent = '';StarISI();}, FEEDBACK_TIME);
   } else {
   if(tr.expected){
     record.correct = 1; record.note='Correct Target'; correctResponses++; rtList.push(rt);
@@ -280,8 +284,8 @@ function processResponse(which){
   }
   results.push(record);
   stimDiv.textContent = '';
+  StarISI();
 }
-  isiTimeout = setTimeout(()=> nextTrial(), parseInt(isiEl.value,10));
 }
 
 function finishTest(){
