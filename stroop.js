@@ -53,6 +53,7 @@ function switchLangStroop(){}
   const PTrials=$('PTrials');
   const fixation=$('plustime');
   const stimShowTimeEl=$("stimShowTime");
+  const testLangEl= $("testLang");
   // state
   let bindings = {}; // colorName -> key (lowercase)
   let trials = [];
@@ -74,6 +75,7 @@ function switchLangStroop(){}
   let practice_run_count = 5;
   const testName = "STROOP"; 
   let plus_time=500;
+  const FEEDBACK_TIME = 1000;
 
   let ALL_COLORS = [];
   const softReset=localStorage.getItem("softReset")==!null;
@@ -99,7 +101,7 @@ window.addEventListener("load", () => {
       localStorage[storageKey] = el.value;
     });
   });
-  $("testLang").addEventListener("change",switchLangStroop());
+  testLangEl.addEventListener("change",switchLangStroop());
     cntButtotnEl.addEventListener("click",hideInstructions);
   localStorage.removeItem("softReset");
   PTrials.addEventListener('change',()=>{practice_run_count=PTrials.value;})
@@ -109,7 +111,6 @@ window.addEventListener("load", () => {
 });
 
 function switchLangStroop(){
-  const testLangEl = $("testLang");
   switchLang(testLangEl.value);
   const scolors= document.getElementsByClassName("scolor");
   const swords= document.getElementsByClassName("sword");
@@ -255,6 +256,7 @@ switchLangStroop();
 
   // show stimulus
   function showStim(tr){
+    const StarISI=()=>{isiTimeout = setTimeout(()=> nextTrial(), parseInt(isiEl.value,10));}
     stimWordEl.textContent = tr.word;
     stimWordEl.style.color = tr.inkCSS;
     stimWordEl.style.transform = `rotate(${tr.angle}deg)`;
@@ -280,15 +282,15 @@ switchLangStroop();
           RT: ''
         });
         stimWordEl.textContent = '';
+        StarISI();
         }else{
         // show missed briefly feedback
         beep(380, 200);
-        stimWordEl.textContent = 'Missed';
+        stimWordEl.textContent = GenerateFeedback(2,testLangEl.value);
         stimWordEl.style.color = '#ef4444';
         stimWordEl.style.fontSize = '48px';
-        setTimeout(()=> {stimWordEl.textContent = '';stimWordEl.style.fontSize='';stimWordEl.style.color ='';}, 200);
+        setTimeout(()=> {stimWordEl.textContent = '';stimWordEl.style.fontSize='';stimWordEl.style.color ='';StarISI();}, FEEDBACK_TIME);
         }
-        isiTimeout = setTimeout(()=> nextTrial(), parseInt(isiEl.value,10));
       }
     }, parseInt(stimTimeEl.value,10));
   }
@@ -330,6 +332,7 @@ switchLangStroop();
   function handleResponseKey(key){
     key = normKey(key);
     if(!awaitingResponse) return;
+    const StarISI=()=>{isiTimeout = setTimeout(()=> nextTrial(), parseInt(isiEl.value,10));}
     awaitingResponse = false;
     clearTimeout(showTimeout);
     clearTimeout(stimTimeout);
@@ -352,22 +355,25 @@ switchLangStroop();
       RT: pressedIsCorrect ? rt : rt
     });
     stimWordEl.textContent=' ';
+    StarISI();
   }else{
     // feedback effects
     if(pressedIsCorrect){
-      stimWordEl.style.boxShadow = '0 8px 40px rgba(16,185,129,0.18)';
+      stimWordEl.textContent = GenerateFeedback(0,testLangEl.value);
+      stimWordEl.style.color = '#11b447';
+      stimWordEl.style.fontSize = '48px';
     } else {
-      stimWordEl.style.boxShadow = '0 8px 40px rgba(239,68,68,0.18)';
-    beep(380, 200); stimWordEl.textContent = 'Wrong'; stimWordEl.style.fontSize='48px'; stimWordEl.style.color = '#ef4444';
+      beep(380, 200);
+      stimWordEl.textContent = GenerateFeedback(1,testLangEl.value);
+      stimWordEl.style.color = '#ef4444';
+        stimWordEl.style.fontSize = '48px';
   }
-  setTimeout(()=> {stimWordEl.style.boxShadow = ''; stimWordEl.style.color=''; stimWordEl.style.fontSize=''; stimWordEl.textContent = '';}, 200);
+  setTimeout(()=> { stimWordEl.style.color=''; stimWordEl.style.fontSize=''; stimWordEl.textContent = '';StarISI();}, FEEDBACK_TIME);
   }
     // visual flash on keybar
     //feedback blank
     highlightKeyByKey(key);
 
-    // proceed after ISI
-    isiTimeout = setTimeout(()=> nextTrial(), parseInt(isiEl.value,10));
   }
 
   // highlight keybar element by pressed key string
