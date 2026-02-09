@@ -17,7 +17,7 @@ const trialRunCheckbox = $('trialRunCheckbox'),testLangEl=$('testLang');
 
 let trials = [], currentIndex = -1, awaiting = false, stimShownAt = 0;
 let stimTimeout = null, isiTimeout = null; let showTimeout=null;
-let results = [], rtList = [], omissions=0, commissions=0, correctResponses=0, correctInhibitions=0;
+let results = [], rtList = [], omissions=0, commissions=0, correctResponses=0, correctNonTarget=0;
 let rtChart=null, perfChart=null;
 let cachedCsvBlob = null;
 let isTrialMode = false;
@@ -117,7 +117,7 @@ function generateTrials(isPractice = false){
   const pool = getDistractorLetters();
   let arr = Array.from({ length: N }, () => ({
   letter: pool[Math.floor(Math.random() * pool.length)],
-  expected: false,
+  isTarget: false,
   color: null
 }));
 
@@ -144,7 +144,7 @@ function generateTrials(isPractice = false){
     if (placed >= pairs) break;
     if (used.has(pos) || used.has(pos + 1)) continue;
     arr[pos].letter = A;
-    arr[pos].expected = false;
+    arr[pos].isTarget = false;
     arr[pos + 1].letter = X;
 
     used.add(pos);
@@ -164,8 +164,8 @@ function generateTrials(isPractice = false){
   }
 
   for(let i=0;i<N;i++){
-    if(arr[i].letter === X && i>0 && arr[i-1].letter === A) arr[i].expected = true;
-    else arr[i].expected = false;
+    if(arr[i].letter === X && i>0 && arr[i-1].letter === A) arr[i].isTarget = true;
+    else arr[i].isTarget = false;
   }
 
   if(colorModeEl.checked){
@@ -175,9 +175,9 @@ function generateTrials(isPractice = false){
     if(requireAColorEl.checked){
       for(let i=0;i<arr.length;i++){
         if(arr[i].letter === X && i>0 && arr[i-1].letter === A && arr[i-1].color === '1'){
-          arr[i].expected = true;
+          arr[i].isTarget = true;
         } else {
-          if(arr[i].letter === X) arr[i].expected = false;
+          if(arr[i].letter === X) arr[i].isTarget = false;
         }
       }
     }
@@ -185,13 +185,13 @@ function generateTrials(isPractice = false){
     arr.forEach(a => a.color = null);
   }
   if(isPractice){ //check later for error
-    const hasTarget = arr.some(t => t.expected);
+    const hasTarget = arr.some(t => t.isTarget);
     if(!hasTarget){
       arr[0].letter = A; arr[0].color = '1';
-      arr[1].letter = X; arr[1].expected = true; arr[1].color = '1';
+      arr[1].letter = X; arr[1].isTarget = true; arr[1].color = '1';
     }
   }
-  return arr.map((t,i) => ({ idx:i+1, letter:t.letter, expected:!!t.expected, color:t.color }));
+  return arr.map((t,i) => ({ idx:i+1, letter:t.letter, isTarget:!!t.isTarget, color:t.color }));
 }
 
 let countdownInterval = null;
@@ -233,7 +233,7 @@ function runMainSession() {
   isTrialMode = false;
   sideBar.style.display = 'none';
   trials = generateTrials();
-  currentIndex = -1; results = []; rtList=[]; omissions=0; commissions=0; correctResponses=0; correctInhibitions=0;
+  currentIndex = -1; results = []; rtList=[]; omissions=0; commissions=0; correctResponses=0; correctNonTarget=0;
   stimDiv.textContent = '';
   startBtn.disabled = true;
 
@@ -285,9 +285,9 @@ function nextTrial(){
   stimTimeout = setTimeout(()=>{
     if(!awaiting) return;
     awaiting = false;
-    if(tr.expected){
+    if(tr.isTarget){
         if(!isTrialMode){
-      omissions++; results.push({ trial:tr.idx, letter:tr.letter, expected:true, keyPressed:'', RT:'', correct:0, note:'Omission' });
+      omissions++; results.push({ trial:tr.idx, letter:tr.letter, isTarget:true, keyPressed:'', RT:'', correct:0, note:'Omission (Target)' });
       StarISI();
     }else {
       // feedback for miss
@@ -298,12 +298,12 @@ function nextTrial(){
         // stimDiv.textContent = '';
     } else {
         if(!isTrialMode){
-      correctInhibitions++;
-      results.push({ trial:tr.idx, letter:tr.letter, expected:false, keyPressed:'', RT:'', correct:1, note:'Correct Inhibition' });
+      omissions++;
+      results.push({ trial:tr.idx, letter:tr.letter, isTarget:false, keyPressed:'', RT:'', correct:1, note:'Omission (Non-Target)' });
       StarISI();
     } else {
         // feedback for correct inhibition
-      stimDiv.textContent = GenerateFeedback(0,testLangEl.value);stimDiv.style.fontSize='48px'; stimDiv.style.color = '#11b447';
+      stimDiv.textContent = GenerateFeedback(2,testLangEl.value);stimDiv.style.fontSize='48px'; stimDiv.style.color = '#ef4444';
       setTimeout(()=> {stimDiv.textContent = '';stimDiv.style.fontSize='';stimDiv.style.color =''; StarISI();}, FEEDBACK_TIME);
         }
       // stimDiv.textContent = '';
@@ -338,20 +338,20 @@ function processResponse(which){
   const StarISI =()=>{isiTimeout = setTimeout(()=> { stimDiv.textContent=''; nextTrial(); }, parseInt(isiEl.value,10));};
   const tr = trials[currentIndex];
   const rt = Math.round(performance.now() - stimShownAt);
-  let record = { trial: tr.idx, letter: tr.letter, expected:tr.expected, keyPressed: which, RT: rt, correct:0, note:'' };
+  let record = { trial: tr.idx, letter: tr.letter, isTarget:tr.isTarget, keyPressed: which, RT: rt, correct:0, note:'' };
   if(isTrialMode){
-    const isCorrect = (tr.expected && which==='target') || (!tr.expected && which==='nontarget');
+    const isCorrect = (tr.isTarget && which==='target') || (!tr.isTarget && which==='nontarget');
     //feedback effects
   if (!isCorrect) {
     beep(380, 200); stimDiv.textContent = GenerateFeedback(1,testLangEl.value); stimDiv.style.fontSize='48px'; stimDiv.style.color = '#ef4444';
   }else{stimDiv.textContent = GenerateFeedback(0,testLangEl.value); stimDiv.style.fontSize='48px'; stimDiv.style.color = '#11b447';}
   setTimeout(()=> { stimDiv.style.color=''; stimDiv.style.fontSize=''; stimDiv.textContent = '';StarISI();}, FEEDBACK_TIME);
   }else{
-  if(tr.expected){
+  if(tr.isTarget){
     if(which === 'target'){ record.correct = 1; record.note='Correct Target'; correctResponses++; rtList.push(rt); }
     else { record.correct = 0; record.note='Wrong key on Target (Commission)'; commissions++; if(colorModeEl.checked) beep(380,160); }
   } else {
-    if(which === 'nontarget'){ record.correct = 1; record.note='Correct Non-target'; correctInhibitions++; }
+    if(which === 'nontarget'){ record.correct = 1; record.note='Correct Non-target'; correctNonTarget++; }
     else { record.correct = 0; record.note='Commission on Non-target'; commissions++; if(colorModeEl.checked) beep(380,160); }
   }
   results.push(record);
@@ -378,20 +378,21 @@ function renderSummary(){
         <strong>Summary</strong>
         <div class="muted">Trials: ${results.length}</div>
         <div>Mean RT (correct targets): <strong>${meanRT} ms</strong></div>
-        <div>Correct Targets: <strong>${correctResponses}</strong> | Omissions: <strong>${omissions}</strong> | Commissions: <strong>${commissions}</strong> | Correct Non-targets: <strong>${correctInhibitions}</strong></div>
+        <div>Correct Targets: <strong>${correctResponses}</strong> | Omissions: <strong>${omissions}</strong> | Commissions: <strong>${commissions}</strong> | Correct Non-targets: <strong>${correctNonTarget}</strong></div>
       </div>
     `;
 }
 
 function renderCharts(disableAnim=false){
-  const rtRecords = results.filter(r => r.RT && r.RT !== '' && r.note && r.note.startsWith('Correct Target'));
+  const rtRecords = results.filter(r => r.RT && r.RT !== '' && r.note && r.note.startsWith('Correct'));
   const labels = rtRecords.map(r => `T${r.trial}`);
+  const pointColors = rtRecords.map(r => r.isTarget ? '#ef4444' : '#3b82f6');
   const data = rtRecords.map(r => r.RT);
   if(rtChart) rtChart.destroy();
-  rtChart = new Chart(rtCanvas.getContext('2d'), { type:'line', data:{ labels, datasets:[{ label:'RT (ms)', data, tension:0.2, fill:false }]}, options:{ animation: disableAnim?false:undefined, plugins:{ title:{ display:true, text:'Reaction Times (Correct Targets)' },legend:{ display:false } }, scales:{x:{ title:{ display:true, text:'Trial' }}, y:{ beginAtZero:true, title:{ display:true, text:'RT (ms)' }}} } });
+  rtChart = new Chart(rtCanvas.getContext('2d'), { type:'line', data:{ labels, datasets:[{ label:'RT (ms)', data, tension:0.2, fill:false, pointBackgroundColor: pointColors, pointBorderColor: pointColors, borderColor: '#9ca3af' }]}, options:{ animation: disableAnim?false:undefined, plugins:{ title:{ display:true, text:'Reaction Times (Correct Targets/Non Target)' },legend:{ display:false } }, scales:{x:{ title:{ display:true, text:'Trial' }}, y:{ beginAtZero:true, title:{ display:true, text:'RT (ms)' }}} } });
 
   if(perfChart) perfChart.destroy();
-  const perfData = [correctResponses, omissions, correctInhibitions, commissions];
+  const perfData = [correctResponses, omissions, correctNonTarget, commissions];
   perfChart = new Chart(perfCanvas.getContext('2d'), { type:'bar', data:{ labels:['Correct Targets','Omissions','Correct Non-targets','Commissions'], datasets:[{ label:'Count', data:perfData,backgroundColor:['#16a34a','#f97316','#3b82f6','#ef4444'] }] }, options:{ animation: disableAnim?false:undefined, plugins:{title:{ display:true, text:'Performance Summary' }, legend:{ display:false } }, scales:{ x:{ title:{ display:true,text:'Category' },ticks:{font:{size:8}} }, y:{ beginAtZero:true,title:{ display:true,text:'Count' } } } } });
 }
 
@@ -403,10 +404,10 @@ function generateCSV(){
     `AX Rate,${axpairsEl.value}`, `Color Mode,${colorModeEl.checked}`, `ColorA,${colorAEl.value}`, `ColorB,${colorBEl.value}`,
     `RequireAColor,${requireAColorEl.checked}`, `TargetKey,${targetKeyEl.value}`, `NonTargetKey,${nonTargetKeyEl.value}`
   ].join('\n');
-  const hdr = ['trial','letter','color','expected','keyPressed','correct','RT','note'];
+  const hdr = ['trial','letter','color','isTarget','keyPressed','correct','RT','note'];
   const rows = [meta, '', hdr.join(',')];
   for(const r of results){
-    const vals = [r.trial, r.letter, (r.color||''), r.expected?1:0, r.keyPressed, r.correct?1:0, r.RT||'', r.note||'']
+    const vals = [r.trial, r.letter, (r.color||''), r.isTarget?1:0, r.keyPressed, r.correct?1:0, r.RT||'', r.note||'']
       .map(v => { const s = String(v).replace(/"/g,'""'); return (s.includes(',') ? `"${s}"` : s); }).join(',');
     rows.push(vals);
   }
@@ -444,7 +445,7 @@ async function downloadPDF(){
     for(const [k,v] of Object.entries(cfg)){ pdf.setFont('helvetica','bold'); pdf.text(k+':', margin, y1); pdf.setFont('helvetica','normal'); pdf.text(String(v), margin + 58, y1); y1 += 6; }
     y1 += 4; pdf.setFont('helvetica','bold'); pdf.text('Performance Summary', margin, y1); y1+=6;
     const meanRT = rtList.length? Math.round(rtList.reduce((a,b)=>a+b,0)/rtList.length) : 'N/A';
-    const summ = {'Mean RT (ms)': meanRT, 'Correct Targets': correctResponses, 'Omissions': omissions, 'Correct Non-targets': correctInhibitions, 'Commissions': commissions};
+    const summ = {'Mean RT (ms)': meanRT, 'Correct Targets': correctResponses, 'Omissions': omissions, 'Correct Non-targets': correctNonTarget, 'Commissions': commissions};
     for(const [k,v] of Object.entries(summ)){ pdf.setFont('helvetica','bold'); pdf.text(k+':', margin, y1); pdf.setFont('helvetica','normal'); pdf.text(String(v), margin + 58, y1); y1 += 6; }
 
     const rtImg = rtCanvas.toDataURL('image/png'); const perfImg = perfCanvas.toDataURL('image/png');
